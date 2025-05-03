@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{% if record %}Edit{% else %}Add{% endif %} Breeding Record
+{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  BREEDING RECORD
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {% if record %}Edit{% else %}Add{% endif %} Breeding Record
+                </h1>
+
+                {% if messages %}
+
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                  <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+    
+            <!-- Sow -->
+            <div class="mb-3">
+              <label class="form-label">Sow</label>
+              <select name="sow" class="form-control">
+                <option value="">Select Sow</option>
+                {% for sow in form.fields.sow.queryset %}
+                  <option value="{{ sow.id }}" {% if form.data.sow == sow.id|stringformat:"s" or form.instance.sow.id == sow.id %}selected{% endif %}>{{ sow.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+    
+            <!-- Insemination Type -->
+            <div class="mb-3">
+              <label class="form-label">Insemination Type</label>
+              <select name="insemination_type" class="form-control">
+                <option value="">Select Insemination Type</option>
+                {% for item in form.fields.insemination_type.queryset %}
+                  <option value="{{ item.id }}" {% if form.data.insemination_type == item.id|stringformat:"s" or form.instance.insemination_type.id == item.id %}selected{% endif %}>{{ item.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+    
+            <!-- Date Fields -->
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Heat Detection Date</label>
+                <input type="date" name="heat_detection_date" class="form-control" value="{{ form.initial.heat_detection_date|default_if_none:'' }}">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Insemination #1</label>
+                <input type="date" name="insemination_1_date" class="form-control" value="{{ form.instance.insemination_1_date|default_if_none:'' }}">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Insemination #2</label>
+                <input type="date" name="insemination_2_date" class="form-control" value="{{ form.instance.insemination_2_date|default_if_none:'' }}">
+              </div>
+            </div>
+    
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Insemination #3</label>
+                <input type="date" name="insemination_3_date" class="form-control" value="{{ form.instance.insemination_3_date|default_if_none:'' }}">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Expected Narrow Date</label>
+                <input type="date" name="expected_narrow_date" class="form-control" value="{{ form.instance.expected_narrow_date|default_if_none:'' }}">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Cost (RWF)</label>
+                <input type="number" step="0.01" name="cost" class="form-control" value="{{ form.instance.cost|default_if_none:'' }}">
+              </div>
+            </div>
+    
+            <!-- Status -->
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-control">
+                {% for val, label in form.fields.status.choices %}
+                  <option value="{{ val }}" {% if form.data.status == val or form.initial.status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+    
+            <!-- Note -->
+            <div class="mb-4">
+              <label class="form-label">Note</label>
+              <textarea name="note" class="form-control" rows="3">{{ form.instance.note|default_if_none:'' }}</textarea>
+            </div>
+    
+            <!-- Submit -->
+            <div class="text-end">
+              <a href="{% url 'breeding_records_list' %}" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                {% if record %}Update{% else %}Save{% endif %}
+              </button>
+            </div>
+          </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+
+    
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

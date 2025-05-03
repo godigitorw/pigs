@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pig Farm - Add Health Record{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  VACCINATION RECORD
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {% if vaccination_record %}Edit Vaccination{% else %}Assign Vaccination{% endif %}
+                
+                </h1>
+
+                 <!-- Display Messages -->
+                 {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                 {% endif %}
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="custom-form">
+            {% csrf_token %}
+            
+            <!-- Health Target Selection -->
+            <div class="form-group">
+                <label class="form-label">Select Vaccination Target</label>
+                <select name="vaccination_target_type" class="form-control" id="targetType">
+                    <option value="">-- Choose Target --</option>
+                    <option value="sow">Sow</option>
+                    <option value="piglet">Piglet</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="sowSelect" style="display: none;">
+                <label class="form-label">Select Sow</label>
+                <select name="sow" class="form-control">
+                    <option value="">-- Select Sow --</option>
+                    {% for sow in sows %}
+                        <option value="{{ sow.id }}">{{ sow.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+             <!-- Piglet Selection (Hidden Initially) -->
+             <div class="form-group" id="pigletSelect" style="display: none;">
+                <label class="form-label">Select Piglet</label>
+                <select name="piglet" class="form-control">
+                    <option value="">-- Select Piglet --</option>
+                    {% for piglet in piglets %}
+                        <option value="{{ piglet.id }}">{{ piglet.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <!-- Vaccine Selection -->
+            <div class="form-group">
+                <label class="form-label">Select Vaccine</label>
+                <select name="vaccine" class="form-control">
+                    <option value="">-- Select Vaccine --</option>
+                    {% for vaccine in vaccines %}
+                        <option value="{{ vaccine.id }}">{{ vaccine.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Cost Input -->
+            <div class="form-group">
+                <label class="form-label">Vaccination Date</label>
+                <input type="date" name="vaccination_date" class="form-control" required>
+            </div>
+
+            <!-- Next Vaccination Date (Auto-calculated) -->
+            <div class="form-group">
+                <label class="form-label">Cost of Vaccination</label>
+                <input type="number" name="cost" class="form-control" placeholder="Enter cost" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary mt-4">Save Vaccination</button>
+    
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+
+<script>
+    document.getElementById('targetType').addEventListener('change', function () {
+        let target = this.value;
+        document.getElementById('sowSelect').style.display = (target === 'sow') ? 'block' : 'none';
+        document.getElementById('pigletSelect').style.display = (target === 'piglet') ? 'block' : 'none';
+    });
+</script>
+
+
+  
+{% endblock %}
+
+{% endblock %}

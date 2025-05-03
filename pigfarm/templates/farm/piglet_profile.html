@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ piglet.name }} Profile{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+<div class="main-content">
+
+  <!-- HEADER -->
+  <div class="header">
+    <img src="{% static 'assets/img/pigfarm.jpeg' %}" class="header-img-top img-fluid" alt="...">
+    <div class="container-fluid">
+      <div class="header-body mt-n5 mt-md-n6">
+        <div class="row align-items-end">
+          <div class="col-auto">
+            <div class="avatar avatar-xxl header-avatar-top">
+              <img src="{% static 'assets/img/pigprofile.jpeg' %}" alt="..." class="avatar-img rounded-circle border border-4 border-body">
+            </div>
+          </div>
+          <div class="col mb-3 ms-n3 ms-md-n2">
+            <h6 class="header-pretitle">PIGLET</h6>
+            <h1 class="header-title">{{ piglet.name }}</h1>
+          </div>
+          <div class="col-12 col-md-auto mt-2 mt-md-0 mb-md-3">
+            <a href="{% url 'piglet_update' piglet.id %}" class="btn btn-primary d-block d-md-inline-block lift">Update Piglet</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="container-fluid">
+    <div class="row">
+
+      <!-- Left: Basic Info -->
+      <div class="col-12 col-xl-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="list-group list-group-flush my-n3">
+              <div class="list-group-item"><strong>Piglet ID:</strong> {{ piglet.unique_id }}</div>
+              <div class="list-group-item"><strong>Birth Date:</strong> {{ piglet.birth_date }}</div>
+              <div class="list-group-item"><strong>Mother:</strong> {{ piglet.sow.name }}</div>
+              <div class="list-group-item"><strong>Insemination Type:</strong> {{ piglet.insemination_type.name|default:"—" }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Stats -->
+      <div class="col-12 col-xl-8">
+        <div class="row">
+          <div class="col-6 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="text-uppercase text-body-secondary mb-2">Initial Weight</h6>
+                <span class="h2">{{ piglet.initial_weight }} Kg</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="text-uppercase text-body-secondary mb-2">Current Weight</h6>
+                <span class="h2">{{ piglet.current_weight|default:"No record" }} Kg</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="text-uppercase text-body-secondary mb-2">Feeding Cost</h6>
+                <span class="h2">{{ piglet.total_feeding_cost|floatformat:0|intcomma }} RWF</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="text-uppercase text-body-secondary mb-2">Health Cost</h6>
+                <span class="h2">{{ piglet.total_health_cost|floatformat:0|intcomma }} RWF</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="text-uppercase text-body-secondary mb-2">Vaccination Cost</h6>
+                <span class="h2">{{ piglet.total_vaccination_cost|floatformat:0|intcomma }} RWF</span>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="col-12 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="text-uppercase text-body-secondary mb-2">Total Spent</h6>
+                <span class="h2">{{ piglet.total_feeding_cost|add:piglet.total_vaccination_cost|add:piglet.total_health_cost|intcomma}} RWF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

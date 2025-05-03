@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  INACTIVE PIGS
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    Add Inactive Pig
+                </h1>
+
+                {% if messages %}
+
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                  <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" class="custom-form">
+          {% csrf_token %}
+      
+          <!-- Pig Type -->
+          <div class="mb-3">
+            <label for="pig_type">Pig Type</label>
+            <select name="pig_type" id="pig_type" class="form-control" onchange="loadPigOptions(this.value)">
+              <option value="">-- Select Type --</option>
+              <option value="sow">Sow</option>
+              <option value="piglet">Piglet</option>
+            </select>
+          </div>
+      
+          <!-- Pig Selection (to be filled dynamically) -->
+          <div class="mb-3">
+            <label for="pig_id">Select Pig</label>
+            <select name="pig_id" id="pig_id" class="form-control">
+              <option value="">-- Select Pig --</option>
+            </select>
+          </div>
+      
+          <!-- Reason -->
+          <div class="mb-3">
+            <label for="reason">Reason</label>
+            <textarea name="reason" id="reason" class="form-control" placeholder="e.g. sold, dead, etc."></textarea>
+          </div>
+      
+          <button type="submit" class="btn btn-danger">Mark as Inactive</button>
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+  function loadPigOptions(type) {
+    const pigSelect = document.getElementById('pig_id');
+    pigSelect.innerHTML = '<option value="">Loading...</option>';
+
+    fetch(`/farm/api/active-pigs/?type=${type}`)
+      .then(response => response.json())
+      .then(data => {
+        pigSelect.innerHTML = '<option value="">-- Select Pig --</option>';
+        data.forEach(pig => {
+          pigSelect.innerHTML += `<option value="${pig.id}">${pig.name}</option>`;
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        pigSelect.innerHTML = '<option value="">Error loading pigs</option>';
+      });
+  }
+</script>
+{% endblock %}
+
+{% endblock %}

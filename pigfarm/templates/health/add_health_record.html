@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pig Farm - Add Health Record{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  HEALTH RECORD
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {% if health_record %}Edit{% else %}Add{% endif %} Health Record
+                </h1>
+
+                 <!-- Display Messages -->
+                 {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                 {% endif %}
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="custom-form">
+            {% csrf_token %}
+            
+            <!-- Health Target Selection -->
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Select Health Target</strong></label>
+                    <select name="health_target_type" class="form-control custom-input" id="healthTarget">
+                        <option value="">-- Choose Target --</option>
+                        <option value="sow" {% if health_record and health_record.sow %}selected{% endif %}>Sow</option>
+                        <option value="piglet" {% if health_record and health_record.piglet %}selected{% endif %}>Piglet</option>
+                    </select>
+                </div>
+            </div>
+        
+            <!-- Sow Selection -->
+            <div class="row mt-3" id="sowSelect" {% if health_record and health_record.sow %}style="display:block;"{% else %}style="display:none;"{% endif %}>
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Select Sow</strong></label>
+                    <select name="sow" class="form-control custom-input">
+                        <option value="">-- Select Sow --</option>
+                        {% for sow in sows %}
+                            <option value="{{ sow.id }}" {% if health_record and health_record.sow.id == sow.id %}selected{% endif %}>{{ sow.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        
+            <!-- Piglet Selection -->
+            <div class="row mt-3" id="pigletSelect" {% if health_record and health_record.piglet %}style="display:block;"{% else %}style="display:none;"{% endif %}>
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Select Piglet</strong></label>
+                    <select name="piglet" class="form-control custom-input">
+                        <option value="">-- Select Piglet --</option>
+                        {% for piglet in piglets %}
+                            <option value="{{ piglet.id }}" {% if health_record and health_record.piglet.id == piglet.id %}selected{% endif %}>{{ piglet.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        
+            <!-- Health Issue -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Health Issue</strong></label>
+                    <input type="text" name="health_issue" class="form-control custom-input"
+                           value="{{ health_record.health_issue|default:'' }}" placeholder="Enter health issue" required>
+                </div>
+            </div>
+        
+            <!-- Treatment Given -->
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Treatment Given</strong></label>
+                    <textarea name="treatment_given" class="form-control custom-textarea" rows="3" 
+                              placeholder="Enter treatment details" required>{{ health_record.treatment_given|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Treatment Cost</strong></label>
+                    <input type="number" step="0.01" min="0" class="form-control" name="cost" id="cost" value="{{ health_record.cost|default_if_none:'' }}" required>
+                </div>
+            </div>
+        
+            <!-- Treatment Date & Status -->
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Treatment Date</strong></label>
+                    <input type="date" name="treatment_date" class="form-control custom-input"
+                           value="{{ health_record.treatment_date|date:'Y-m-d' }}" required>
+                </div>
+        
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Status</strong></label>
+                    <select name="status" class="form-control custom-input">
+                        <option value="ongoing" {% if form.status.value == "ongoing" %}selected{% endif %}>Ongoing</option>
+                        <option value="recovered" {% if form.status.value == "recovered" %}selected{% endif %}>Recovered</option>
+                        <option value="critical" {% if form.status.value == "critical" %}selected{% endif %}>Critical</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Note</strong></label>
+                    <textarea name="note" class="form-control custom-textarea" rows="3"
+                              placeholder="Note" required>{{ health_record.note }}</textarea>
+                </div>
+            </div>
+        
+            <button type="submit" class="btn btn-primary mt-4">{% if health_record %}Update{% else %}Save{% endif %} Health Record</button>
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let healthTarget = document.getElementById("healthTarget");
+        let sowSelect = document.getElementById("sowSelect");
+        let pigletSelect = document.getElementById("pigletSelect");
+
+        function toggleFields() {
+            if (healthTarget.value === "sow") {
+                sowSelect.style.display = "block";
+                pigletSelect.style.display = "none";
+            } else if (healthTarget.value === "piglet") {
+                sowSelect.style.display = "none";
+                pigletSelect.style.display = "block";
+            } else {
+                sowSelect.style.display = "none";
+                pigletSelect.style.display = "none";
+            }
+        }
+
+        healthTarget.addEventListener("change", toggleFields);
+        toggleFields();  // Run once on page load to set correct state
+    });
+</script>
+
+  
+{% endblock %}
+
+{% endblock %}

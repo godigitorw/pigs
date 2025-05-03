@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pig Farm - {% if record %}Edit{% else %}Add{% endif %} Weight Record{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h1 class="header-title">
+                  {% if record %}Edit{% else %}Add{% endif %} Weight Record
+                </h1>
+
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="custom-form">
+          {% csrf_token %}
+
+          <!-- Target Type -->
+          <div class="form-group">
+            <label class="form-label"><strong>Target Type</strong></label>
+            <select name="target_type" class="form-control" id="targetType" required>
+              <option value="">-- Select Target --</option>
+              <option value="sow" {% if record and record.target_type == 'sow' %}selected{% endif %}>Sow</option>
+              <option value="piglet" {% if record and record.target_type == 'piglet' %}selected{% endif %}>Piglet</option>
+            </select>
+          </div>
+
+          <!-- Sow Select -->
+          <div class="form-group" id="sowSelect" style="display: {% if record and record.target_type == 'sow' %}block{% else %}none{% endif %};">
+            <label class="form-label"><strong>Select Sow</strong></label>
+            <select name="sow" class="form-control">
+              <option value="">-- Select Sow --</option>
+              {% for sow in sows %}
+                <option value="{{ sow.id }}" {% if record and record.sow_id == sow.id %}selected{% endif %}>{{ sow.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Piglet Select -->
+          <div class="form-group" id="pigletSelect" style="display: {% if record and record.target_type == 'piglet' %}block{% else %}none{% endif %};">
+            <label class="form-label"><strong>Select Piglet</strong></label>
+            <select name="piglet" class="form-control">
+              <option value="">-- Select Piglet --</option>
+              {% for piglet in piglets %}
+                <option value="{{ piglet.id }}" {% if record and record.piglet_id == piglet.id %}selected{% endif %}>{{ piglet.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Recorded Date -->
+          <div class="form-group mt-3">
+            <label class="form-label"><strong>Recorded Date</strong></label>
+            <input type="date" name="recorded_date" value="{{ record.recorded_date|default_if_none:'' }}" class="form-control custom-input" required>
+          </div>
+
+          <!-- Weight (Actual) -->
+          <div class="form-group mt-3">
+            <label class="form-label"><strong>Measured Weight (kg)</strong></label>
+            <input type="number" name="weight" value="{{ record.weight|default_if_none:'' }}" step="0.01" class="form-control custom-input" placeholder="Enter actual weight in kg" required>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary mt-4">{% if record %}Update{% else %}Add{% endif %} Weight Record</button>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.getElementById('targetType').addEventListener('change', function () {
+    let targetType = this.value;
+    let sowSelect = document.getElementById('sowSelect');
+    let pigletSelect = document.getElementById('pigletSelect');
+    sowSelect.style.display = (targetType === 'sow') ? 'block' : 'none';
+    pigletSelect.style.display = (targetType === 'piglet') ? 'block' : 'none';
+  });
+</script>
+{% endblock %}
+
+{% endblock %}

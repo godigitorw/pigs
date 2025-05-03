@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  New Rom
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {{ action|default:"Add" }} Room
+                </h1>
+
+                {% if messages %}
+
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                  <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{% if room and room.pk %}{% url 'room_update' room.pk %}{% else %}{% url 'add_room' %}{% endif %}" class="mb-4">
+            {% csrf_token %}
+
+          <!-- Team name -->
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Room name </label>
+            <!-- Input -->
+            <input type="text" id="room_name" name="name" value="{{ room.name|default:'' }}" class="form-control" placeholder="Enter room name">
+          </div>
+
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Room Capacity </label>
+            <!-- Input -->
+            <input type="number" id="capacity" name="capacity" value="{{ room.capacity|default:'' }}" class="form-control" placeholder="Enter room capacity">
+          </div>
+
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Room Status </label>
+            <!-- Input -->
+            <select class="form-select" id="status" name="status" required>
+                <option value="available" {% if room.status == 'available' %}selected{% endif %}>Available</option>
+                <option value="full" {% if room.status == 'full' %}selected{% endif %}>Full</option>
+                <option value="maintenance" {% if room.status == 'maintenance' %}selected{% endif %}>Maintenance</option>
+            </select>
+          </div>
+
+
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Note </label>
+            <!-- Input -->
+            <textarea id="note" name="note" class="form-control" rows="3" placeholder="Enter notes (optional)">{{ room.note|default:'' }}</textarea>
+        </div>
+
+          <!-- Divider -->
+          <hr class="mt-5 mb-5">
+
+          <!-- Buttons -->
+          <button type="submit" class="btn w-100 btn-primary">
+            {{ action|default:"Add" }} Room
+          </button>
+          <a href="{% url 'room_list' %}" class="btn w-100 btn-link text-body-secondary mt-2">
+            Cancel
+          </a>
+
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+
+    
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

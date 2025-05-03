@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  SOWS
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {{ action|default:"Add" }} Sow
+                </h1>
+
+                {% if messages %}
+
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                  <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST"  class="mb-4">
+            {% csrf_token %}
+
+          <!-- Team name -->
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Choose Sow Room </label>
+            <!-- Input -->
+            <select name="room" id="room" class="form-control" required>
+                <option value="">Select Room</option>
+                {% for room in rooms %}
+                    <option value="{{ room.id }}" {% if room.id|stringformat:"s" == form.room.value|stringformat:"s" %}selected{% endif %}>
+                        {{ room.name }}
+                    </option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Cost of Buying the Sow (RWF)</label>
+            <input type="number" name="initial_cost" id="initial_cost" class="form-control"
+                   step="0.01" min="0"
+                   value="{{ form.initial_cost.value|default_if_none:'' }}" required>
+          </div>
+
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Registered Date </label>
+            <!-- Input -->
+            <span>{{ form.registered_date.value|default:'' }}</span>
+            <input type="date" name="registered_date" id="registered_date" class="form-control" value="{{ form.registered_date.value|default:'' }}" required>
+          </div>
+
+          <div class="form-group">
+
+            <!-- Label -->
+            <label class="form-label"> Category </label>
+            <!-- Input -->
+            <select name="category" id="category" class="form-control" required>
+                <option value="">Select Category</option>
+                {% for key, label in categories %}
+                    <option value="{{ key }}" {% if key == form.category.value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+          </div>
+
+
+          <!-- Divider -->
+          <hr class="mt-5 mb-5">
+
+          <!-- Buttons -->
+          <button type="submit" class="btn w-100 btn-primary">
+            {{ action|default:"Add" }} Sow
+          </button>
+          <a href="{% url 'sow_list' %}" class="btn w-100 btn-link text-body-secondary mt-2">
+            Cancel
+          </a>
+
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+
+    
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

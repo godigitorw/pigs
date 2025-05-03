@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+{% load humanize %}
+
+
+<!--MAIN CONTENT-->
+<div class="main-content">
+
+   <!-- HEADER -->
+   <div class="header">
+    <div class="container-fluid">
+
+      <!-- Body -->
+      <div class="header-body">
+        <div class="row align-items-end">
+          <div class="col">
+
+            <!-- Pretitle -->
+            <h6 class="header-pretitle">
+              Overview
+            </h6>
+
+            <!-- Title -->
+            <h1 class="header-title">
+              Dashboard
+            </h1>
+
+          </div>
+          <div class="col-auto">
+
+            <!-- Button -->
+            <a href="#!" class="btn btn-primary lift">
+              Create Report
+            </a>
+
+          </div>
+        </div> <!-- / .row -->
+      </div> <!-- / .header-body -->
+
+    </div>
+  </div> <!-- / .header -->
+
+
+  <div class="container-fluid">
+
+    <div class="row">
+
+      <div class="col-12 col-lg-6">
+        <!-- Hours -->
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h6 class="text-uppercase text-muted mb-1">Total Sales</h6>
+                <h4 class="mb-0 text-primary">{{ total_sales|floatformat:0|intcomma }} RWF</h4>
+              </div>
+              <div class="icon icon-shape bg-primary text-white rounded-circle shadow">
+                <i class="fe fe-dollar-sign"></i>
+              </div>
+            </div>
+        
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h6 class="text-uppercase text-muted mb-1">Total Cost</h6>
+                <h4 class="mb-0 text-danger">{{ total_spent_on_sold|floatformat:0|intcomma }} RWF</h4>
+              </div>
+              <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
+                <i class="fe fe-activity"></i>
+              </div>
+            </div>
+        
+            <hr class="my-3">
+        
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-uppercase text-muted mb-1">
+                  {% if is_profit %}Profit{% else %}Loss{% endif %}
+                </h6>
+                <h3 class="mb-0 {% if is_profit %}text-success{% else %}text-danger{% endif %}">
+                  {{ net_profit|floatformat:0|intcomma }} RWF
+                </h3>
+              </div>
+              <div class="icon icon-shape {% if is_profit %}bg-success{% else %}bg-warning{% endif %} text-white rounded-circle shadow">
+                <i class="fe {% if is_profit %}fe-trending-up{% else %}fe-trending-down{% endif %}"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="card shadow-lg border-0 bg-light mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 class="text-uppercase text-muted fw-bold mb-1">Farm Financial Summary</h5>
+                <h2 class="mb-0 {% if is_farm_profitable %}text-success{% else %}text-danger{% endif %}">
+                  {% if is_farm_profitable %}
+                    +{{ net_balance|floatformat:0|intcomma }} RWF
+                  {% else %}
+                    -{{ net_balance|floatformat:0|intcomma }} RWF
+                  {% endif %}
+                </h2>
+                <span class="text-muted small">Net after expenses (sales - total farm cost)</span>
+              </div>
+              <div>
+                <i class="fe fe-trending-{% if is_farm_profitable %}up text-success{% else %}down text-danger{% endif %} display-4"></i>
+              </div>
+            </div>
+        
+            <hr>
+        
+            <div class="row text-center">
+              <div class="col">
+                <p class="mb-1 text-muted">Total Sales</p>
+                <h6 class="mb-0 fw-bold text-primary">{{ total_sales|floatformat:0|intcomma }} RWF</h6>
+              </div>
+              <div class="col">
+                <p class="mb-1 text-muted">Total Farm Cost</p>
+                <h6 class="mb-0 fw-bold text-warning">{{ total_farm_cost|floatformat:0|intcomma }} RWF</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+
+
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Total Pigs
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_pigs }} Pigs
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-gitlab text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Total Sows
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_sows }} Sows
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-gitlab text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Total Piglets
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_piglets }} piglets
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-gitlab text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Feed Consumed This Week
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_feed_consumed }} kg
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-git-commit text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Feed Cost This Week
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_feed_cost }} RWF
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-git-commit text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Health Cost
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_health_cost|floatformat:0|intcomma }} RWF
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-git-commit text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Vacination Cost
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_vaccination_cost|floatformat:0|intcomma }} RWF
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-git-commit text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-12 col-lg-4">
+        <!-- Hours -->
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+
+                <!-- Title -->
+                <h6 class="text-uppercase text-body-secondary mb-2">
+                  Breeding Cost
+                </h6>
+
+                <!-- Heading -->
+                <span class="h2 mb-0">  
+                  {{ total_breeding_cost|floatformat:0|intcomma }} RWF
+                </span>
+
+              </div>
+              <div class="col-auto">
+
+                <!-- Icon -->
+                <span class="h2 fe fe-git-commit text-body-secondary mb-0"></span>
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="text-uppercase text-muted">Total Farm Cost</h6>
+              <i class="fe fe-dollar-sign fs-3 text-warning"></i>
+            </div>
+            <h3 class="mb-0 text-dark fw-bold">
+              {{ total_farm_cost|floatformat:0|intcomma }} RWF
+            </h3>
+            <small class="text-muted">
+              Sum of feed, health, vaccination, and breeding expenses.
+            </small>
+          </div>
+        </div>
+      </div>
+
+
+
+   
+    
+
+
+  
+  
+  </div>
+  <div class="row">
+    <div class="col-12 col-lg-4">
+      <div class="card mt-4">
+        <div class="card-header bg-warning text-white">
+          <h5 class="mb-0">Ongoing Health Treatments</h5>
+        </div>
+        <div class="card-body">
+          {% if ongoing_health_records %}
+            <ul class="list-group">
+              {% for record in ongoing_health_records %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    {% if record.sow %}
+                      <strong>Sow:</strong> {{ record.sow.name }}
+                    {% elif record.piglet %}
+                      <strong>Piglet:</strong> {{ record.piglet.name }}
+                    {% endif %}
+                  </div>
+                  <span class="badge bg-warning text-dark">Ongoing</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No ongoing treatments.</p>
+          {% endif %}
+        </div>
+      </div>
+      
+    </div>
+
+    <div class="col-12 col-lg-4">
+      <div class="card mt-4">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">Pigs Due for Vaccination in Less Than 1 Month</h5>
+        </div>
+        <div class="card-body">
+          {% if upcoming_vaccinations %}
+            <ul class="list-group">
+              {% for record in upcoming_vaccinations %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    {% if record.sow %}
+                      <strong>Sow:</strong> {{ record.sow.name }}
+                    {% elif record.piglet %}
+                      <strong>Piglet:</strong> {{ record.piglet.name }}
+                    {% endif %}
+                    <br>
+                    <small><strong>Vaccine:</strong> {{ record.vaccine.name }}</small><br>
+                    <small><strong>Next Due:</strong> {{ record.next_vaccination_date }}</small>
+                  </div>
+                  <span class="badge bg-danger">Due Soon</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No upcoming vaccinations in the next month.</p>
+          {% endif %}
+        </div>
+      </div>
+      
+    </div>
+    <div class="col-12 col-lg-4">
+      <div class="card mt-4 border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">⚠️ Low Feed Stock Alert</h5>
+        </div>
+        <div class="card-body">
+          {% if low_stock_feeds %}
+            <ul class="list-group">
+              {% for feed in low_stock_feeds %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{{ feed.name }}</strong>
+                    <small class="d-block text-muted">{{ feed.feed_type|capfirst }}</small>
+                  </div>
+                  <span class="badge bg-danger">
+                    {{ feed.stock_quantity }} / {{ feed.initial_quantity }} {{ feed.unit }}
+                  </span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-success">All feed stocks are above the safety threshold.</p>
+          {% endif %}
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+</div>
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('customFeedChart').getContext('2d');
+
+  // Destroy if already created
+  if (window.customFeedChartInstance) {
+    window.customFeedChartInstance.destroy();
+  }
+
+  // Initialize custom chart
+  window.customFeedChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ cost_chart_labels|safe }},
+      datasets: [
+        {
+          label: 'Kg Consumed',
+          data: {{ quantity_chart_values|safe }},
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4
+        },
+        {
+          label: 'Feed Cost (RWF)',
+          data: {{ cost_chart_values|safe }},
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Kg / RWF' }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const unit = context.dataset.label.includes('Cost') ? 'RWF' : 'kg';
+              return context.dataset.label + ': ' + context.parsed.y + ' ' + unit;
+            }
+          }
+        }
+      }
+    }
+  });
+
+
+
+  
+</script>
+{% endblock %}
+
+
+{% endblock %}
+
+
+

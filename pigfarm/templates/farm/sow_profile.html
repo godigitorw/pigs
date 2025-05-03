@@ -1,0 +1,589 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ sow.name }} Profile{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+<div class="main-content">
+
+  
+
+  <!-- HEADER -->
+  <div class="header">
+
+    <!-- Image -->
+    <img src="{% static 'assets/img/pigfarm.jpeg' %}" class="header-img-top img-fluid" max-height="100" alt="..." >
+
+    <div class="container-fluid">
+
+      <!-- Body -->
+      <div class="header-body mt-n5 mt-md-n6">
+        <div class="row align-items-end">
+          <div class="col-auto">
+
+            <!-- Avatar -->
+            <div class="avatar avatar-xxl header-avatar-top">
+              <img src="{% static 'assets/img/pigprofile.jpeg' %}" alt="..." class="avatar-img rounded-circle border border-4 border-body">
+            </div>
+
+          </div>
+          <div class="col mb-3 ms-n3 ms-md-n2">
+
+            
+
+            <!-- Pretitle -->
+            <h6 class="header-pretitle">
+              SOW
+            </h6>
+
+            <!-- Title -->
+            <h1 class="header-title">
+                {{ sow.name }}
+                {% if sow.origin == "From The Farm" %}
+                <span style="background-color: #d1e7dd; color: #0f5132; padding: 3px 8px; border-radius: 5px; font-size: 0.9em;">
+                  From The Farm
+                </span>
+                {% endif %} 
+            </h1>
+
+            
+             
+          
+
+          </div>
+          <div class="col-12 col-md-auto mt-2 mt-md-0 mb-md-3">
+
+            <!-- Button -->
+            <a href="{% url 'update_sow' sow.id %}" class="btn btn-primary d-block d-md-inline-block lift">
+              Update Sow
+            </a>
+
+          </div>
+        </div> <!-- / .row -->
+        <div class="row align-items-center">
+          <div class="col">
+
+            {% if messages %}
+            {% for message in messages %}
+              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+
+
+           
+
+          </div>
+        </div>
+      </div> <!-- / .header-body -->
+
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  =
+  <div class="container-fluid">
+    <div class="row">
+
+        <div class="col-12 col-xl-4">
+            <div class="card">
+                <div class="card-body">
+  
+                  <!-- List group -->
+                  <div class="list-group list-group-flush my-n3">
+                    <div class="list-group-item">
+                      <div class="row align-items-center">
+                        <div class="col">
+  
+                          <!-- Title -->
+                          <h5 class="mb-0">
+                            Sow ID
+                          </h5>
+  
+                        </div>
+                        <div class="col-auto">
+  
+                          <!-- Time -->
+                          <time class="small text-body-secondary" datetime="1988-10-24">
+                            {{ sow.unique_id }}
+                          </time>
+  
+                        </div>
+                      </div> <!-- / .row -->
+                    </div>
+                    <div class="list-group-item">
+                      <div class="row align-items-center">
+                        <div class="col">
+  
+                          <!-- Title -->
+                          <h5 class="mb-0">
+                            Sow Name
+                          </h5>
+  
+                        </div>
+                        <div class="col-auto">
+  
+                          <!-- Time -->
+                          <time class="small text-body-secondary" datetime="2018-10-28">
+                            {{ sow.name }}
+                            
+                          </time>
+  
+                        </div>
+                      </div> <!-- / .row -->
+                    </div>
+                    <div class="list-group-item">
+                      <div class="row align-items-center">
+                        <div class="col">
+  
+                          <!-- Title -->
+                          <h5 class="mb-0">
+                            Category
+                          </h5>
+  
+                        </div>
+                        <div class="col-auto">
+  
+                          <!-- Text -->
+                          <small class="text-body-secondary">
+                            {{ sow.get_category_display }}
+                          </small>
+  
+                        </div>
+                      </div> <!-- / .row -->
+                    </div>
+                    <div class="list-group-item">
+                      <div class="row align-items-center">
+                        <div class="col">
+  
+                          <!-- Title -->
+                          <h5 class="mb-0">
+                            Bought Price (Initial Cost)
+                          </h5>
+  
+                        </div>
+                        <div class="col-auto">
+  
+                          <small class="text-body-secondary">
+                            {{ sow.initial_cost|floatformat:0|intcomma }} RWF
+                          </small>
+  
+                        </div>
+                      </div> <!-- / .row -->
+                    </div>
+
+
+                    <div class="list-group-item">
+                      <div class="row align-items-center">
+                        <div class="col">
+  
+                          <!-- Title -->
+                          <h5 class="mb-0">
+                            Room
+                          </h5>
+  
+                        </div>
+                        <div class="col-auto">
+  
+                          <small class="text-body-secondary">
+                            {{ sow.room.name }}
+                          </small>
+  
+                        </div>
+                      </div> <!-- / .row -->
+                    </div>
+
+                    <div class="list-group-item">
+                      <div class="row align-items-center">
+                        <div class="col">
+  
+                          <!-- Title -->
+                          <h5 class="mb-0">
+                            Orgin
+                          </h5>
+  
+                        </div>
+                        <div class="col-auto">
+  
+                          <small class="text-body-secondary">
+                            {{ sow.origin }}
+                          </small>
+  
+                        </div>
+                      </div> <!-- / .row -->
+                    </div>
+
+                    
+
+
+
+                  </div>
+  
+                </div>
+              </div>
+        </div>
+
+        <div class="col-12 col-xl-8">
+            <div class="row">
+                <div class="col-12 col-lg-4 ">
+
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Total Piglets
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                                {{ sow.piglet_sow_count }}
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-gift text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+        
+                  </div>
+
+
+                  <div class="col-12 col-lg-4 ">
+
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Total Birth Count
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                                {{ sow.birth_count }}
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-watch text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+        
+                  </div>
+
+                  <div class="col-12 col-lg-4 ">
+
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Current Weight
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                              {% if sow.current_weight %}
+                                <p>{{ sow.current_weight }} Kg</p>
+                              {% else %}
+                                <p>No weight record</p>
+                              {% endif %}
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-divide text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+        
+                  </div>
+                
+
+                  <div class="col-12 col-lg-4 ">
+                    
+
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Feeding Cost
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                              {{ sow.total_feeding_cost|floatformat:0|intcomma }} RWF
+                            </span>
+        
+                            
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-dollar-sign text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+
+                    
+        
+                  </div>
+
+                  <div class="col-12 col-lg-4 ">
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Vacination Cost
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                              {{ sow.total_vaccination_cost|floatformat:0|intcomma }} RWF
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-dollar-sign text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="col-12 col-lg-4 ">
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Health Cost
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                              {{ sow.total_health_cost|floatformat:0|intcomma }} RWF
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-dollar-sign text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-lg-4 ">
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Breeding Cost
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                              {{ sow.total_breeding_cost|floatformat:0|intcomma }} RWF
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-dollar-sign text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+                  </div>
+
+                  
+
+                  <div class="col-12 col-lg-4 ">
+                    <!-- Value  -->
+                    <div class="card">
+                      <div class="card-body">
+                        <div class="row align-items-center gx-0">
+                          <div class="col">
+        
+                            <!-- Title -->
+                            <h6 class="text-uppercase text-body-secondary mb-2">
+                              Total Spent
+                            </h6>
+        
+                            <!-- Heading -->
+                            <span class="h2 mb-0">
+                              {{ sow.total_feeding_cost|add:sow.total_vaccination_cost|add:sow.total_health_cost|add:sow.total_breeding_cost|add:sow.initial_cost|floatformat:0|intcomma }} RWF
+                            </span>
+        
+                          </div>
+                          <div class="col-auto">
+        
+                            <!-- Icon -->
+                            <span class="h2 fe fe-dollar-sign text-body-secondary mb-0"></span>
+        
+                          </div>
+                        </div> <!-- / .row -->
+                      </div>
+                    </div>
+                  </div>
+            </div>
+        </div>
+      
+    </div> <!-- / .row -->
+  </div>
+
+
+
+
+
+
+
+
+</div>
+
+</div> <!-- / .main-content -->
+
+ <!-- Delete Health Record Modal -->
+ <div class="modal fade" id="deleteHealthRecordModal" tabindex="-1" aria-labelledby="deleteHealthRecordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-sm">
+      <form id="healthDeleteForm" method="post">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="healthDeleteMessage" class="mb-0 text-muted"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+
+  // Chart.js graph rendering
+  const chartData = {{ chart_data|safe }};
+  
+  const ctx = document.getElementById('weightChart').getContext('2d');
+  const weightChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        label: 'Weight (kg)',
+        data: chartData.weights,
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+        },
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Date',
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Weight (kg)',
+          },
+        },
+      },
+    },
+  });
+
+function setHealthRecordToDelete(recordId, healthIssue) {
+    // Set message
+    const msgElement = document.getElementById('healthDeleteMessage');
+    if (msgElement) {
+        msgElement.innerText = `Are you sure you want to delete the health record for "${healthIssue}"?`;
+    }
+
+    // Set form action
+    const form = document.getElementById('healthDeleteForm');
+    if (form) {
+        form.action = `/health/health-records/${recordId}/delete-from-sow/`;
+    }
+
+    console.log("recordId:", recordId);
+    console.log("healthIssue:", healthIssue);
+}
+
+</script>
+{% endblock %}
+
+{% endblock %}

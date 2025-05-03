@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  STOCK
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    Add Feed Stock
+                </h1>
+
+                {% if messages %}
+
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                  <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST"  class="mb-4">
+            {% csrf_token %}
+
+          <!-- Team name -->
+          <div class="form-group">
+            <label class="form-label"> Feed Name  </label>
+            <input type="text" name="name" class="form-control" placeholder="Enter Feed Name" value="{{ form.name.value|default_if_none:'' }}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label"> Feed Type  </label>
+            
+            <select name="feed_type" class="form-select" required>
+                {% for choice in form.feed_type.field.choices %}
+                    <option value="{{ choice.0 }}" {% if form.feed_type.value == choice.0 %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"> Stock Quantity  </label>
+            <input type="number" step="0.01" name="stock_quantity" class="form-control" placeholder="Enter quantity" value="{{ form.stock_quantity.value|default_if_none:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label"> Unit  </label>
+            
+            <select name="unit" class="form-select" required>
+                {% for choice in form.unit.field.choices %}
+                    <option value="{{ choice.0 }}" {% if form.unit.value == choice.0 %}selected{% endif %}>
+                        {{ choice.1 }}
+                    </option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"> Cost Per Unit (RWF)  </label>
+            <input type="number" step="0.01" name="cost_per_unit" id="cost_per_unit"
+           class="form-control" value="{{ form.cost_per_unit.value|default:'' }}" required>
+        </div>
+
+
+
+          <!-- Divider -->
+          <hr class="mt-5 mb-5">
+
+          <!-- Buttons -->
+          <button type="submit" class="btn w-100 btn-primary">
+            💾 Save Feed
+          </button>
+          <a href="{% url 'feed_stock_list' %}" class="btn w-100 btn-link text-body-secondary mt-2">
+            Cancel
+          </a>
+
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+
+    
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pig Farm - Add Health Record{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  VACCINATION
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {% if vaccination %} Edit {% else %} Add {% endif %} Vaccination
+                </h1>
+
+                 <!-- Display Messages -->
+                 {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                 {% endif %}
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="custom-form">
+            {% csrf_token %}
+            
+            <!-- Health Target Selection -->
+            <div class="form-group">
+                <label class="form-label"><strong>Vaccine Name</strong></label>
+                <input type="text" name="name" value="{{ form.name.value|default_if_none:'' }}" class="form-control custom-input" placeholder="Enter vaccine name" required>
+            </div>
+        
+            <!-- Sow Selection -->
+            <div class="form-group mt-3">
+                <label class="form-label"><strong>Duration (Days)</strong></label>
+                <input type="number" name="duration_days" value="{{ form.duration_days.value|default_if_none:'' }}" class="form-control custom-input" placeholder="Enter duration in days" required>
+            </div>
+        
+            <button type="submit" class="btn btn-primary mt-4">{% if vaccination %} Update {% else %} Save {% endif %} Vaccination</button>
+        
+        </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+
+
+  
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+          <div class="col-12">
+
+            <!-- Header -->
+            <div class="header">
+              <div class="header-body">
+                <div class="row align-items-center">
+                  <div class="col">
+
+                    <!-- Pretitle -->
+                    <h6 class="header-pretitle">
+                      FEED RECORD
+                    </h6>
+
+                    <!-- Title -->
+                    <h1 class="header-title text-truncate">
+                        📦 Feeding Records
+                    </h1>
+                    <br>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+
+                  </div>
+                  <div class="col-auto">
+
+                    
+
+                    <!-- Buttons -->
+                    <a href="{% url 'add_feeding_record' %}" class="btn btn-primary ms-2">
+                        Add New Record
+                    </a>
+
+                  </div>
+                </div> <!-- / .row -->
+                <div class="row align-items-center">
+                  <div class="col">
+
+                    <!-- Nav -->
+                    <ul class="nav nav-tabs nav-overflow header-tabs">
+                      <li class="nav-item">
+                        <a href="#!" class="nav-link text-nowrap active">
+                          All Records <span class="badge rounded-pill text-bg-secondary-subtle">24</span>
+                        </a>
+                      </li>
+                    </ul>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab content -->
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="contactsListPane" role="tabpanel" aria-labelledby="contactsListTab">
+
+                <!-- Card -->
+                <div class="card" data-list='{"valueNames": ["Name", "Type", "Quantity", "Unit", "Cost-Per-Unit", "Total-Cost", "Date Added"], "page": 10, "pagination": {"paginationClass": "list-pagination"}}' id="contactsList">
+                  <div class="card-header">
+                    <div class="row align-items-center">
+                      <div class="col">
+
+                        <!-- Form -->
+                        <form>
+                          <div class="input-group input-group-flush input-group-merge input-group-reverse">
+                            <input class="form-control list-search" type="search" placeholder="Search Room Here">
+                            <span class="input-group-text">
+                              <i class="fe fe-search"></i>
+                            </span>
+                          </div>
+                        </form>
+
+                      </div>
+                    </div> <!-- / .row -->
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-sm table-hover table-nowrap card-table">
+                      <thead>
+                        <tr>
+                          <th>
+
+                            <!-- Checkbox -->
+                            <div class="form-check mb-n2">
+                              <input class="form-check-input list-checkbox-all" id="listCheckboxAll" type="checkbox">
+                              <label class="form-check-label" for="listCheckboxAll"></label>
+                            </div>
+
+                          </th>
+                          <th>
+                            <a class="list-sort text-body-secondary" data-sort="Name" href="#">Feeding Target</a>
+                          </th>
+                          <th>
+                            <a class="list-sort text-body-secondary" data-sort="Type" href="#">Feed Name</a>
+                          </th>
+                          <th>
+                            <a class="list-sort text-body-secondary" data-sort="Quantity" href="#">Quantity Used (kg)</a>
+                          </th>
+                          <th>
+                            <a class="list-sort text-body-secondary" data-sort="Unit" href="#">Cost of Feed</a>
+                          </th>
+                          <th>
+                            <a class="list-sort text-body-secondary" data-sort="Cost-Per-Unit" href="#">Cost</a>
+                          </th>
+                          <th>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="list fs-base">
+
+                        {% for record in feeding_records %}
+
+                        <tr>
+                          <td>
+
+                            <!-- Checkbox -->
+                            <div class="form-check">
+                              <input class="form-check-input list-checkbox" id="listCheckboxSeven" type="checkbox">
+                              <label class="form-check-label" for="listCheckboxSeven"></label>
+                            </div>
+
+                          </td>
+                          <td>
+                            <span class="Name">{{ forloop.counter }}</span>
+                          </td>
+                          <td>
+                            <span class="Type">
+                                {% if record.sow %}
+                                    {{ record.sow.name }} (Sow)
+                                {% elif record.piglet %}
+                                    {{ record.piglet.name }} (Piglet)
+                                {% endif %}
+                            </span>
+                          </td>
+                          <td>
+                            <span class="Quantity">{{ record.feed.name }}</span>
+                          </td>
+                          <td>
+                            <span class="Unit">{{ record.quantity_used }} kg</span>
+                          </td>
+                          <td>
+                            <span class="Cost-Per-Unit">{{ record.total_cost }} RWFF</span>
+                          </td>
+                          
+                          <td>
+                            <span class="Cost-Per-Unit">{{ record.recorded_at }}</span>
+                          </td>
+                          <td class="text-end">
+
+                            <!-- Dropdown -->
+                            <div class="dropdown">
+                              <a class="dropdown-ellipses dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fe fe-more-vertical"></i>
+                              </a>
+                              <div class="dropdown-menu dropdown-menu-end">
+                                <a href="{% url 'edit_feed_stock' record.feed.id %}" class="dropdown-item">
+                                  Update
+                                </a>
+                                <button class="dropdown-item text-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteFeedModal"
+                                        onclick="openDeleteModal('{{ feed.pk }}', '{{ feed.name }}')">
+                                    Delete
+                                </button>
+                                
+                              </div>
+                            </div>
+
+                          </td>
+                        </tr>
+
+
+                        {% endfor %}
+
+                      </tbody>
+                    </table>
+
+                    
+
+                    <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="deleteFeedModal" tabindex="-1" aria-labelledby="deleteFeedModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteFeedModalLabel">Confirm Feed Deletion</h5>
+                                    <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p id="deleteFeedName"></p>
+                                    <form id="deleteFeedForm" method="post">
+                                        {% csrf_token %}
+                                        <div class="modal-footer">
+                                            <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                                            <button class="btn btn-outline-primary btn-sm" type="button" data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  <div class="card-footer d-flex justify-content-between">
+
+                    <!-- Pagination (prev) -->
+                    <ul class="list-pagination-prev pagination pagination-tabs card-pagination">
+                      <li class="page-item">
+                        <a class="page-link ps-0 pe-4 border-end" href="#">
+                          <i class="fe fe-arrow-left me-1"></i> Prev
+                        </a>
+                      </li>
+                    </ul>
+
+                    <!-- Pagination -->
+                    <ul class="list-pagination pagination pagination-tabs card-pagination"></ul>
+
+                    <!-- Pagination (next) -->
+                    <ul class="list-pagination-next pagination pagination-tabs card-pagination">
+                      <li class="page-item">
+                        <a class="page-link ps-4 pe-0 border-start" href="#">
+                          Next <i class="fe fe-arrow-right ms-1"></i>
+                        </a>
+                      </li>
+                    </ul>
+
+                    <!-- Alert -->
+                    <div class="list-alert alert alert-dark alert-dismissible border fade" role="alert">
+
+                      <!-- Content -->
+                      <div class="row align-items-center">
+                        <div class="col">
+
+                          <!-- Checkbox -->
+                          <div class="form-check">
+                            <input class="form-check-input" id="listAlertCheckbox" type="checkbox" checked disabled>
+                            <label class="form-check-label text-white" for="listAlertCheckbox">
+                              <span class="list-alert-count">0</span> deal(s)
+                            </label>
+                          </div>
+
+                        </div>
+                        <div class="col-auto me-n3">
+
+                          <!-- Button -->
+                          <button class="btn btn-sm bg-white text-white bg-opacity-20 bg-opacity-15-hover">
+                            Edit
+                          </button>
+
+                          <!-- Button -->
+                          <button class="btn btn-sm bg-white text-white bg-opacity-20 bg-opacity-15-hover">
+                            Delete
+                          </button>
+
+                        </div>
+                      </div> <!-- / .row -->
+
+                      <!-- Close -->
+                      <button type="button" class="list-alert-close btn-close" aria-label="Close"></button>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div> <!-- / .row -->
+      </div>
+
+</div>
+
+{% block extra_js %}
+<script>
+
+function openDeleteModal(feedId, feedName) {
+        document.getElementById('deleteFeedName').innerText = `Are you sure you want to delete "${feedName}"?`;
+        document.getElementById('deleteFeedForm').action = `/farm/feed-stock/${feedId}/delete/`;
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteFeedModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        let modal = document.getElementById('deleteFeedModal');
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

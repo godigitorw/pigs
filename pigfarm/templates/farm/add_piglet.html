@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="header-pretitle">PIGLET</h6>
+                <h1 class="header-title">{{ action|default:"Add" }} Piglet</h1>
+
+                {% if messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                    <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" class="mb-4">
+          {% csrf_token %}
+
+          <!-- Sow selection -->
+          <div class="form-group">
+            <label class="form-label">Choose Sow</label>
+            <select name="sow" id="sow" class="form-control" required>
+              <option value="" disabled selected>Select Sow</option>
+              {% for sow in sows %}
+                <option value="{{ sow.id }}" {% if form.sow.value == sow.id %}selected{% endif %}>{{ sow.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Birth Date -->
+          <div class="form-group">
+            <label class="form-label">Birth/Registration Date</label>
+            <input type="date" name="birth_date" id="birth_date" class="form-control" value="{{ form.birth_date.value|default:'' }}" required>
+          </div>
+
+          <!-- Initial Weight -->
+          <div class="form-group">
+            <label class="form-label">Initial Weight</label>
+            <input type="number" step="0.01" name="initial_weight" id="initial_weight" class="form-control" value="{{ form.initial_weight.value|default:0 }}" required>
+            <small class="form-text text-muted">Initial weight will be used as current weight initially.</small>
+          </div>
+
+          <!-- Insemination Type -->
+          <div class="form-group">
+            <label class="form-label">Insemination Type Used</label>
+            <select name="insemination_type" id="insemination_type" class="form-control">
+              <option value="" disabled selected>Select Insemination Type</option>
+              {% for ins in form.insemination_type.field.queryset %}
+                <option value="{{ ins.id }}" {% if form.insemination_type.value == ins.id|stringformat:"s" %}selected{% endif %}>{{ ins.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Auto-generated name -->
+          <div class="form-group">
+            <label class="form-label">Piglet Name</label>
+            <input type="text" id="name" class="form-control" value="{{ piglet_name }}" readonly>
+            <small class="form-text text-muted">Piglet name is generated automatically from the sow and birth order.</small>
+          </div>
+
+          <!-- Hidden Current Weight -->
+          <input type="hidden" name="current_weight" id="current_weight" value="{{ form.initial_weight.value|default:0 }}">
+
+          <hr class="mt-5 mb-5">
+
+          <!-- Buttons -->
+          <button type="submit" class="btn w-100 btn-primary">
+            {{ action }} Piglet
+          </button>
+          <a href="{% url 'piglets' %}" class="btn w-100 btn-link text-body-secondary mt-2">
+            Cancel
+          </a>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

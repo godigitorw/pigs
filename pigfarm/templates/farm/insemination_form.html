@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ insemination|default:"Add" }} Insemination{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  INSEMINATION
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    {{ insemination|yesno:"Edit,Add" }} Insemination Method
+                </h1>
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+        
+            <div class="mb-3">
+              <label for="id_name" class="form-label">Insemination Name</label>
+              <input type="text" name="name" id="id_name" class="form-control"
+                     value="{{ form.name.value|default_if_none:'' }}">
+              {% if form.name.errors %}
+                <div class="text-danger">{{ form.name.errors.0 }}</div>
+              {% endif %}
+            </div>
+        
+            <div class="mb-3">
+              <label for="id_description" class="form-label">Description</label>
+              <textarea name="description" id="id_description" class="form-control"
+                        rows="4">{{ form.description.value|default_if_none:'' }}</textarea>
+              {% if form.description.errors %}
+                <div class="text-danger">{{ form.description.errors.0 }}</div>
+              {% endif %}
+            </div>
+        
+            <button type="submit" class="btn btn-success">{{ insemination|yesno:"Update,Save" }}</button>
+            <a href="{% url 'insemination_list' %}" class="btn btn-secondary">Back</a>
+          </form>
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+
+    
+
+
+</script>
+{% endblock %}
+
+{% endblock %}

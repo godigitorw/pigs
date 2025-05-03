@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+
+<!--MAIN CONTENT-->
+
+<div class="main-content">
+
+    
+  
+
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <!-- Header -->
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+
+                <!-- Pretitle -->
+                <h6 class="header-pretitle">
+                  FEED RECORD
+                </h6>
+
+                <!-- Title -->
+                <h1 class="header-title">
+                    Add Feed Record
+                </h1>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+              </div>
+            </div> <!-- / .row -->
+          </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="custom-form">
+          {% csrf_token %}
+      
+          <!-- Feeding Target Selection -->
+          <div class="form-group">
+              <label class="form-label">Select Feeding Target</label>
+              <select name="feeding_target_type" class="form-control">
+                  <option value="">-- Choose Target --</option>
+                  <option value="sow">Sow</option>
+                  <option value="piglet">Piglet</option>
+              </select>
+          </div>
+      
+          <!-- Sow Selection (Initially Hidden) -->
+          <div class="form-group" id="sowSelect" style="display:none;">
+              <label class="form-label">Select Sow</label>
+              <select name="sow" class="form-control">
+                  <option value="">-- Select Sow --</option>
+                  {% for sow in sows %}
+                      <option value="{{ sow.id }}">{{ sow.name }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      
+          <!-- Piglet Selection (Initially Hidden) -->
+          <div class="form-group" id="pigletSelect" style="display:none;">
+              <label class="form-label">Select Piglet</label>
+              <select name="piglet" class="form-control">
+                  <option value="">-- Select Piglet --</option>
+                  {% for piglet in piglets %}
+                      <option value="{{ piglet.id }}">{{ piglet.name }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      
+          <!-- Feed Selection -->
+          <div class="form-group">
+              <label class="form-label">Select Feed</label>
+              <select name="feed" class="form-control">
+                  <option value="">-- Select Feed --</option>
+                  {% for feed in feeds %}
+                      <option value="{{ feed.id }}">{{ feed.name }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+      
+          <!-- Quantity Input -->
+          <div class="form-group">
+              <label class="form-label">Quantity Used (kg)</label>
+              <input type="number" name="quantity_used" class="form-control" placeholder="Enter quantity used" required>
+          </div>
+      
+          <button type="submit" class="btn btn-primary">Add Feeding Record</button>
+      </form>
+      
+
+      </div>
+    </div> <!-- / .row -->
+  </div>
+
+</div> <!-- / .main-content -->
+
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      let targetSelect = document.querySelector("select[name='feeding_target_type']");
+      let sowSelectDiv = document.getElementById("sowSelect");
+      let pigletSelectDiv = document.getElementById("pigletSelect");
+      let sowSelect = document.querySelector("select[name='sow']");
+      let pigletSelect = document.querySelector("select[name='piglet']");
+  
+      function toggleFeedingTarget() {
+          let targetType = targetSelect.value;
+  
+          if (targetType === "sow") {
+              sowSelectDiv.style.display = "block";
+              pigletSelectDiv.style.display = "none";
+              sowSelect.required = true;
+              pigletSelect.required = false;
+          } else if (targetType === "piglet") {
+              pigletSelectDiv.style.display = "block";
+              sowSelectDiv.style.display = "none";
+              pigletSelect.required = true;
+              sowSelect.required = false;
+          } else {
+              sowSelectDiv.style.display = "none";
+              pigletSelectDiv.style.display = "none";
+              sowSelect.required = false;
+              pigletSelect.required = false;
+          }
+      }
+  
+      // Run function on page load in case of validation errors
+      targetSelect.addEventListener("change", toggleFeedingTarget);
+      toggleFeedingTarget();
+  });
+  </script>
+  
+{% endblock %}
+
+{% endblock %}

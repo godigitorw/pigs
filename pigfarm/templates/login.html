@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Pig Farm{% endblock %}
+
+{% block content %}
+<!-- Full Page Centered Container -->
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="col-12 col-md-5 col-xl-4">
+
+    <!-- Heading -->
+    <h1 class="display-4 text-center mb-3">
+      Sign in
+    </h1>
+
+    {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Subheading -->
+    <p class="text-body-secondary text-center mb-5">
+      Free access to our dashboard.
+    </p>
+
+    <!-- Form -->
+    <form method="POST">
+      {% csrf_token %}
+
+      <!-- Username -->
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <div class="row">
+          <div class="col">
+            <label class="form-label">Password</label>
+          </div>
+          <div class="col-auto">
+            <a href="#" class="form-text small text-body-secondary">Forgot password?</a>
+          </div>
+        </div>
+
+        <div class="input-group input-group-merge">
+          <input class="form-control" type="password" name="password" id="password" placeholder="Enter your password">
+          <span class="input-group-text"><i class="fe fe-eye"></i></span>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-lg w-100 btn-primary mb-3">
+        Sign in
+      </button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
