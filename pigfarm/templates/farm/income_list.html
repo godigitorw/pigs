@@ -87,34 +87,48 @@
                       <th><a class="list-sort text-body-secondary" data-sort="regdate" href="#">Description</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="init-weight" href="#">Amount</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="curr-weight" href="#">Actions</a></th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody class="list fs-base">
                     {% for income in incomes %}
                     <tr>
-                      <td>
-                        <div class="form-check">
-                          <input class="form-check-input list-checkbox" type="checkbox">
-                          <label class="form-check-label"></label>
-                        </div>
-                      </td>
                       <td><span class="piglet-name">{{ income.date }}</span></td>
                       <td><span class="sow">{{ income.get_source_display }}</span></td>
                       <td><span class="regdate">{{ income.description|default:"—" }}</span></td>
                       <td><span class="init-weight">{{ income.amount }} RWF</span></td>
                       <td class="text-end">
                         <div class="dropdown">
-                          <a class="dropdown-ellipses dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fe fe-more-vertical"></i>
-                          </a>
-                          <div class="dropdown-menu dropdown-menu-end">
-                            <a href="#" class="dropdown-item">Update</a>
+                          <div class="dropdown">
+                            <a class="dropdown-ellipses dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                              <i class="fe fe-more-vertical"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                              <a href="{% url 'edit_income' income.id %}" class="dropdown-item">Edit</a>
+                              <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteIncomeModal{{ income.id }}">Delete</button>
+                            </div>
                           </div>
                           
                         </div>
                       </td>
                     </tr>
+                    <!-- Delete Modal for this record -->
+                    <div class="modal fade" id="deleteIncomeModal{{ income.id }}" tabindex="-1" aria-labelledby="deleteIncomeModalLabel{{ income.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteIncomeModalLabel{{ income.id }}">Confirm Deletion</h5>
+                            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            Are you sure you want to delete the income record of <strong>{{ income.get_source_display }}</strong> on <strong>{{ income.date }}</strong>?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <a href="{% url 'delete_income' income.id %}" class="btn btn-danger">Delete</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                     {% endfor %}
                   </tbody>
                 </table>

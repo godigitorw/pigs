@@ -41,6 +41,7 @@
           <div class="card-body">
             <div class="list-group list-group-flush my-n3">
               <div class="list-group-item"><strong>Piglet ID:</strong> {{ piglet.unique_id }}</div>
+              <div class="list-group-item"><strong>Piglet Tag:</strong> {{ piglet.animal_tag_id }}</div>
               <div class="list-group-item"><strong>Birth Date:</strong> {{ piglet.birth_date }}</div>
               <div class="list-group-item"><strong>Mother:</strong> {{ piglet.sow.name }}</div>
               <div class="list-group-item"><strong>Insemination Type:</strong> {{ piglet.insemination_type.name|default:"—" }}</div>
@@ -63,8 +64,14 @@
           <div class="col-6 col-lg-4">
             <div class="card">
               <div class="card-body">
-                <h6 class="text-uppercase text-body-secondary mb-2">Current Weight</h6>
-                <span class="h2">{{ piglet.current_weight|default:"No record" }} Kg</span>
+                {% if latest_weight_record %}
+                  <span class="h2">{{ latest_weight_record.weight }} Kg</span>
+                  <small class="text-muted d-block">
+                    (as of {{ latest_weight_record.recorded_date }})
+                  </small>
+                {% else %}
+                  <span class="h2 text-muted">No record</span>
+                {% endif %}
               </div>
             </div>
           </div>

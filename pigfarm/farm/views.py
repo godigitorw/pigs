@@ -85,13 +85,19 @@ def room_list(request):
     return render(request, 'farm/room_list.html', {'rooms': rooms})
 
 
-# View: Delete Room
 def room_delete(request, pk):
     room = get_object_or_404(Room, pk=pk)
+
     if request.method == 'POST':
+        # Prevent deletion if room has assigned sows
+        if Sow.objects.filter(room=room).exists():
+            messages.error(request, f'Cannot delete room "{room.name}" because it still has assigned sows.')
+            return redirect('room_list')
+
         room.delete()
-        messages.success(request, 'Room deleted successfully.')
+        messages.success(request, f'Room "{room.name}" deleted successfully.')
         return redirect('room_list')
+
     return render(request, 'farm/room_confirm_delete.html', {'room': room})
 
 
@@ -734,6 +740,9 @@ def delete_breeding_record(request, record_id):
 
 
 
+
+
+
 def add_or_update_income_record(request, record_id=None):
     record = get_object_or_404(IncomeRecord, id=record_id) if record_id else None
 
@@ -741,18 +750,17 @@ def add_or_update_income_record(request, record_id=None):
         form = IncomeRecordForm(request.POST, instance=record)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Income record saved successfully.')
+            if record:
+                messages.success(request, "Income record updated successfully.")
+            else:
+                messages.success(request, "Income record added successfully.")
             return redirect('income_list')
         else:
-            messages.error(request, 'There was an error saving the income record.')
+            messages.error(request, "Please correct the errors below.")
     else:
         form = IncomeRecordForm(instance=record)
 
-    context = {
-        'form': form,
-        'record': record,
-    }
-    return render(request, 'farm/add_income.html', context)
+    return render(request, 'farm/add_income.html', {'form': form, 'record': record})
 
 
 def income_list(request):
@@ -764,6 +772,13 @@ def income_list(request):
         'total_income': total_income,
     }
     return render(request, 'farm/income_list.html', context)
+
+
+def delete_income(request, record_id):
+    income = get_object_or_404(IncomeRecord, id=record_id)
+    income.delete()
+    messages.success(request, "Income record deleted successfully.")
+    return redirect('income_list')
 
 
 
@@ -799,20 +814,35 @@ def sell_sow(request):
 def piglet_profile(request, unique_id):
     piglet = get_object_or_404(Piglet, unique_id=unique_id)
 
-    # Get weight records for chart (if needed)
-    weight_records = WeightRecord.objects.filter(piglet=piglet, target_type='piglet').order_by('recorded_date')
+    # All weight records (for chart)
+    weight_records = WeightRecord.objects.filter(
+        piglet=piglet,
+        target_type='piglet'
+    ).order_by('recorded_date')
+
+    # Latest weight record
+    latest_record = WeightRecord.objects.filter(
+        piglet=piglet,
+        target_type='piglet'
+    ).order_by('-recorded_date').first()
 
     chart_data = {
-        "labels": [record.recorded_date.strftime("%Y-%m-%d") for record in weight_records],
-        "weights": [float(record.weight) for record in weight_records],
+        "labels": [r.recorded_date.strftime("%Y-%m-%d") for r in weight_records],
+        "weights": [float(r.weight) for r in weight_records],
     }
 
     context = {
         "piglet": piglet,
         "chart_data": chart_data,
+        "latest_weight_record": latest_record,
         "total_health_cost": piglet.total_health_cost,
         "total_feeding_cost": piglet.total_feeding_cost,
-        "total_spent": piglet.total_health_cost + piglet.total_feeding_cost + piglet.total_vaccination_cost,    
+        "total_vaccination_cost": piglet.total_vaccination_cost,
+        "total_spent": (
+            piglet.total_health_cost
+            + piglet.total_feeding_cost
+            + piglet.total_vaccination_cost
+        ),
     }
 
     return render(request, "farm/piglet_profile.html", context)
@@ -840,3 +870,36 @@ def sell_piglet(request):
 
     messages.success(request, f"Piglet '{piglet.name}' sold successfully.")
     return redirect('piglets')  # make sure 'piglets' is a valid URL name
+
+
+
+def expense_list(request):
+    expenses = ExpenseRecord.objects.all().order_by('-date')
+    total_expense = expenses.aggregate(total=models.Sum('amount'))['total'] or 0
+
+    return render(request, 'farm/expense_list.html', {
+        'expenses': expenses,
+        'total_expense': total_expense
+    })
+
+def add_or_update_expense_record(request, record_id=None):
+    record = get_object_or_404(ExpenseRecord, id=record_id) if record_id else None
+
+    if request.method == 'POST':
+        form = ExpenseRecordForm(request.POST, instance=record)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Expense record saved successfully.')
+            return redirect('expense_list')
+        else:
+            messages.error(request, 'There was an error saving the expense record.')
+    else:
+        form = ExpenseRecordForm(instance=record)
+
+    return render(request, 'farm/add_expense.html', {'form': form, 'record': record})
+
+def delete_expense(request, record_id):
+    expense = get_object_or_404(ExpenseRecord, id=record_id)
+    expense.delete()
+    messages.success(request, 'Expense record deleted successfully.')
+    return redirect('expense_list')

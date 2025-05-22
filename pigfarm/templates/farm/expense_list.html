@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Farm Expense Records{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<!--MAIN CONTENT-->
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12">
+
+        <!-- Header -->
+        <div class="header">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="header-pretitle">EXPENSES</h6>
+                <h1 class="header-title text-truncate">Expense Records</h1>
+                <br>
+                {% if messages %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                  {% for message in messages %}
+                  <p>{{ message }}</p>
+                  {% endfor %}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-auto">
+                <a href="{% url 'add_expense' %}" class="btn btn-primary ms-2">
+                  Add New Record
+                </a>
+              </div>
+            </div>
+
+            <div class="row align-items-center">
+              <div class="col">
+                <ul class="nav nav-tabs nav-overflow header-tabs">
+                  <li class="nav-item">
+                    <a href="#!" class="nav-link text-nowrap active">
+                      All Records
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab content -->
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="contactsListPane" role="tabpanel">
+            <div class="card" data-list='{"valueNames": ["exp-date", "exp-cat", "exp-desc", "exp-amt"], "page": 10, "pagination": {"paginationClass": "list-pagination"}}' id="contactsList">
+
+              <!-- Search -->
+              <div class="card-header">
+                <div class="row align-items-center">
+                  <div class="col">
+                    <form>
+                      <div class="input-group input-group-flush input-group-merge input-group-reverse">
+                        <input class="form-control list-search" type="search" placeholder="Search Expenses">
+                        <span class="input-group-text"><i class="fe fe-search"></i></span>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total -->
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h5 class="card-title mb-0">Total Expenses: <strong>{{ total_expense }} RWF</strong></h5>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div class="table-responsive">
+                <table class="table table-sm table-hover table-nowrap card-table">
+                  <thead>
+                    <tr>
+                      <th><a class="list-sort text-body-secondary" data-sort="exp-date" href="#">Date</a></th>
+                      <th><a class="list-sort text-body-secondary" data-sort="exp-cat" href="#">Category</a></th>
+                      <th><a class="list-sort text-body-secondary" data-sort="exp-desc" href="#">Description</a></th>
+                      <th><a class="list-sort text-body-secondary" data-sort="exp-amt" href="#">Amount</a></th>
+                      <th><a class="list-sort text-body-secondary" href="#">Actions</a></th>
+                    </tr>
+                  </thead>
+                  <tbody class="list fs-base">
+                    {% for expense in expenses %}
+                    <tr>
+                      <td><span class="exp-date">{{ expense.date }}</span></td>
+                      <td><span class="exp-cat">{{ expense.get_category_display }}</span></td>
+                      <td><span class="exp-desc">{{ expense.description|default:"—" }}</span></td>
+                      <td><span class="exp-amt">{{ expense.amount }} RWF</span></td>
+                      <td class="text-end">
+                        <div class="dropdown">
+                          <a class="dropdown-ellipses dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fe fe-more-vertical"></i>
+                          </a>
+                          <div class="dropdown-menu dropdown-menu-end">
+                            <a href="{% url 'edit_expense' expense.id %}" class="dropdown-item">Edit</a>
+                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteExpenseModal{{ expense.id }}">Delete</button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteExpenseModal{{ expense.id }}" tabindex="-1" aria-labelledby="deleteExpenseModalLabel{{ expense.id }}" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="deleteExpenseModalLabel{{ expense.id }}">Confirm Deletion</h5>
+                            <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            Are you sure you want to delete the expense for <strong>{{ expense.get_category_display }}</strong> on <strong>{{ expense.date }}</strong>?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <a href="{% url 'delete_expense' expense.id %}" class="btn btn-danger">Delete</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <div class="card-footer d-flex justify-content-between">
+                <ul class="list-pagination-prev pagination pagination-tabs card-pagination">
+                  <li class="page-item"><a class="page-link ps-0 pe-4 border-end" href="#"><i class="fe fe-arrow-left me-1"></i> Prev</a></li>
+                </ul>
+                <ul class="list-pagination pagination pagination-tabs card-pagination"></ul>
+                <ul class="list-pagination-next pagination pagination-tabs card-pagination">
+                  <li class="page-item"><a class="page-link ps-4 pe-0 border-start" href="#">Next <i class="fe fe-arrow-right ms-1"></i></a></li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+{% endblock %}
+
+{% endblock %}

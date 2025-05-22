@@ -31,21 +31,31 @@ class Room(models.Model):
 
     name = models.CharField(max_length=10, unique=True)
     capacity = models.PositiveIntegerField()
-    pig_count = models.PositiveIntegerField(default=0, editable=False)  # Auto-updated
+    pig_count = models.PositiveIntegerField(default=0, editable=False)  # Auto-updated from sows
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='available')
     note = models.TextField(blank=True, null=True)
 
     def update_pig_count(self):
-        """Update pig_count based on assigned pigs."""
-        self.pig_count = self.pigs.count()  # Assuming related name is 'pigs'
+        """Update pig_count and status based on sows only."""
+        from farm.models import Sow  # Avoid circular import
+
+        sow_count = Sow.objects.filter(room=self).count()
+        self.pig_count = sow_count
+
+        if sow_count >= self.capacity:
+            self.status = 'full'
+        elif sow_count == 0:
+            self.status = 'available'
+        elif self.status != 'maintenance':
+            self.status = 'available'
+
         self.save()
 
     def is_full(self):
-        """Check if the room is full based on capacity."""
         return self.pig_count >= self.capacity
 
     def __str__(self):
-        return f"{self.name} - {self.status} (Capacity: {self.capacity}, Current: {self.pig_count})"
+        return f"{self.name} - {self.status.capitalize()} (Capacity: {self.capacity}, Current: {self.pig_count})"
     
 
 
@@ -98,6 +108,13 @@ class Sow(models.Model):
 
     room = models.ForeignKey('Room', on_delete=models.CASCADE, related_name='sows')
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    animal_tag_id = models.CharField(
+    max_length=50,
+    unique=True,
+    null=True,
+    blank=True,
+    help_text="E.g., RW-PIG-001"
+    )
 
     origin = models.CharField(
         max_length=20,
@@ -209,6 +226,13 @@ class Piglet(models.Model):
     initial_weight = models.FloatField()
     current_weight = models.FloatField(default=0.0, editable=False)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    animal_tag_id = models.CharField(
+    max_length=50,
+    unique=True,
+    null=True,
+    blank=True,
+    help_text="E.g., RW-PIG-001"
+)
 
     # 🔽 Add this line
     insemination_type = models.ForeignKey(
@@ -313,6 +337,33 @@ class FeedStock(models.Model):
     def __str__(self):
         return f"{self.name} - {self.stock_quantity} {self.unit}"
     
+    @property
+    def stock_status(self):
+        if self.initial_quantity == 0:
+            return "No Initial Data"
+        
+        percent = (self.stock_quantity / self.initial_quantity) * 100
+
+        if percent < 20:
+            return "Low"
+        elif percent < 50:
+            return "Moderate"
+        else:
+            return "Good"
+
+    @property
+    def stock_status_class(self):
+        # Used for badge colors in template
+        status = self.stock_status
+        if status == "Low":
+            return "danger"
+        elif status == "Moderate":
+            return "warning"
+        elif status == "Good":
+            return "success"
+        else:
+            return "secondary"
+    
 
 class FeedingRecord(models.Model):
     """Model to record feeding activities"""
@@ -408,8 +459,6 @@ class BreedingRecord(models.Model):
 
 class IncomeRecord(models.Model):
     SOURCE_CHOICES = [
-        ('piglet_sale', 'Piglet Sale'),
-        ('sow_sale', 'Sow Sale'),
         ('manure', 'Manure Sale'),
         ('service', 'Service Rendered'),
         ('other', 'Other'),
@@ -423,6 +472,28 @@ class IncomeRecord(models.Model):
 
     def __str__(self):
         return f"{self.get_source_display()} - {self.amount} RWF"
+    
+
+
+# models.py
+class ExpenseRecord(models.Model):
+    CATEGORY_CHOICES = [
+        ('feed', 'Feed Purchase'),
+        ('medicine', 'Veterinary Medicine'),
+        ('maintenance', 'Maintenance'),
+        ('salary', 'Staff Salary'),
+        ('other', 'Other'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date = models.DateField(default=timezone.now)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    description = models.TextField(blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.amount} RWF"
     
 
 

@@ -3,6 +3,8 @@ from django import forms
 from .models import *
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.db.models import F
 
 
 class RoomForm(forms.ModelForm):
@@ -32,7 +34,7 @@ class SowForm(forms.ModelForm):
     )
 
     room = forms.ModelChoiceField(
-        queryset=Room.objects.all(),
+        queryset=Room.objects.all(),  # Will be overridden in __init__
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True,
         empty_label="Select Room"
@@ -47,7 +49,21 @@ class SowForm(forms.ModelForm):
 
     class Meta:
         model = Sow
-        fields = ['room', 'registered_date', 'category', 'initial_cost']
+        fields = ['room', 'registered_date', 'category', 'initial_cost','animal_tag_id']
+
+   
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Allow all rooms (including full ones) to avoid "invalid choice" error
+        self.fields['room'].queryset = Room.objects.all()
+
+    def clean_room(self):
+        room = self.cleaned_data.get('room')
+        if room and room.pig_count >= room.capacity:
+            raise forms.ValidationError(f"The selected room '{room.name}' is already full. Please choose another room.")
+        return room
 
 
         
@@ -88,7 +104,7 @@ class PigletForm(forms.ModelForm):
 
     class Meta:
         model = Piglet
-        fields = ['sow', 'birth_date', 'initial_weight', 'insemination_type']
+        fields = ['sow', 'birth_date', 'initial_weight', 'insemination_type','animal_tag_id']
 
     def save(self, commit=True):
         """Set current_weight from initial_weight before saving."""
@@ -226,6 +242,12 @@ class IncomeRecordForm(forms.ModelForm):
     class Meta:
         model = IncomeRecord
         fields = ['date', 'source', 'description', 'amount']
+
+
+class ExpenseRecordForm(forms.ModelForm):
+    class Meta:
+        model = ExpenseRecord
+        fields = ['date', 'category', 'description', 'amount']
 
 
 

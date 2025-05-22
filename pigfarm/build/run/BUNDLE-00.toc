@@ -1,0 +1,3 @@
+([('run',
+   '/Users/gataremmanuel/Documents/DjangoProjects/PigFarm-New/pigfarm/dist/run',
+   'EXECUTABLE')],)

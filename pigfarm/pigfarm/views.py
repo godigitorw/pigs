@@ -1,6 +1,6 @@
 # pigfarm/views.py
 from django.shortcuts import render, redirect
-from farm.models import Sow, Piglet, FeedingRecord, BreedingRecord, SoldPig, FeedStock
+from farm.models import Sow, Piglet, FeedingRecord, BreedingRecord, SoldPig, FeedStock, IncomeRecord, ExpenseRecord
 from django.utils.timezone import now, timedelta
 from collections import OrderedDict
 from django.db.models.functions import TruncDate
@@ -124,6 +124,17 @@ def dashboard_view(request):
     total_spent_on_sold = SoldPig.objects.aggregate(total=Sum('total_cost'))['total'] or Decimal(0)
 
     total_sow_initial_cost = Sow.objects.aggregate(total=Sum('initial_cost'))['total'] or Decimal(0)
+
+
+    total_income = IncomeRecord.objects.aggregate(total=Sum('amount'))['total'] or 0
+    total_expense = ExpenseRecord.objects.aggregate(total=Sum('amount'))['total'] or 0
+    balance = total_income - total_expense
+
+
+    total_sales = SoldPig.objects.aggregate(total=Sum('sold_price'))['total'] or Decimal(0)
+    total_sales = total_sales + total_income
+    feed_stocks = FeedStock.objects.all()
+
    
 
     # Profit or loss
@@ -134,7 +145,8 @@ def dashboard_view(request):
         Decimal(total_health_cost) +
         Decimal(total_vaccination_cost) +
         Decimal(total_breeding_cost) +
-        Decimal(total_sow_initial_cost)
+        Decimal(total_sow_initial_cost) +
+        Decimal(total_expense)
     )
 
     net_balance = total_sales - total_farm_cost
@@ -152,6 +164,9 @@ def dashboard_view(request):
     low_stock_feeds = FeedStock.objects.filter(
     initial_quantity__gt=0,  # To avoid division by zero
     stock_quantity__lt=F('initial_quantity') * Decimal('0.20')
+
+
+
 )
 
     
@@ -187,6 +202,10 @@ def dashboard_view(request):
         'ongoing_health_records': ongoing_health_records,
         'upcoming_vaccinations': upcoming_vaccinations,
         'low_stock_feeds': low_stock_feeds,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'balance': balance,
+        'feed_stocks': feed_stocks,
     }
 
     return render(request, 'dashboard.html', context)

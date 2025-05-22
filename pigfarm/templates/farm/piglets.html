@@ -80,11 +80,11 @@
                           <label class="form-check-label" for="listCheckboxAll"></label>
                         </div>
                       </th>
+                      <th><a class="list-sort text-body-secondary" data-sort="piglet-name" href="#">Piglet Tag</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="piglet-name" href="#">Piglet Name</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="sow" href="#">Sow Name</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="regdate" href="#">Birth Date</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="init-weight" href="#">Initial Weight</a></th>
-                      <th><a class="list-sort text-body-secondary" data-sort="curr-weight" href="#">Current Weight</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="category" href="#">Category</a></th>
                       <th><a class="list-sort text-body-secondary" data-sort="insemination" href="#">Insemination Type</a></th>
                       <th></th>
@@ -99,6 +99,7 @@
                           <label class="form-check-label"></label>
                         </div>
                       </td>
+                      <td><span class="sow">{{ piglet.animal_tag_id }}</span></td>
                       <td>
                         <span class="piglet-name">
                           <a href="{% url 'piglet_profile' piglet.unique_id %}" class="text-reset text-decoration-underline">
@@ -109,7 +110,6 @@
                       <td><span class="sow">{{ piglet.sow.name }}</span></td>
                       <td><span class="regdate">{{ piglet.birth_date }}</span></td>
                       <td><span class="init-weight">{{ piglet.initial_weight }} Kg</span></td>
-                      <td><span class="curr-weight">{{ piglet.current_weight }} Kg</span></td>
                       <td>
                         <span class="badge" style="background-color: 
                             {% if piglet.current_weight < 12 %}blue

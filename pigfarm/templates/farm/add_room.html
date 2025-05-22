@@ -81,6 +81,11 @@
                 <option value="full" {% if room.status == 'full' %}selected{% endif %}>Full</option>
                 <option value="maintenance" {% if room.status == 'maintenance' %}selected{% endif %}>Maintenance</option>
             </select>
+            {% if form.room.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.room.errors.0 }}
+              </div>
+            {% endif %}
           </div>
 
 

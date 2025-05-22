@@ -39,9 +39,15 @@ urlpatterns = [
     path('income/', income_list, name='income_list'),
     path('income/add/', add_or_update_income_record, name='add_income'),
     path('income/edit/<uuid:record_id>/', add_or_update_income_record, name='edit_income'),
+    path('income/edit/<uuid:record_id>/', add_or_update_income_record, name='edit_income'),
+    path('income/delete/<uuid:record_id>/', delete_income, name='delete_income'),
     path('sows/sell/', sell_sow, name='sell_sow'),
     path('piglets/<uuid:unique_id>/', piglet_profile, name='piglet_profile'),
     path('piglets/sell/', sell_piglet, name='sell_piglet'),
+    path('expenses/', expense_list, name='expense_list'),
+    path('expenses/add/', add_or_update_expense_record, name='add_expense'),
+    path('expenses/edit/<uuid:record_id>/', add_or_update_expense_record, name='edit_expense'),
+    path('expenses/delete/<uuid:record_id>/', delete_expense, name='delete_expense'),
     
 ]
     
