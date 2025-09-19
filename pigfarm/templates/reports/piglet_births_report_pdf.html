@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Piglet Births Report</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 12px;
+        margin: 30px;
+      }
+      h1,
+      h2 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      th {
+        background: #c9f7f5;
+        color: #333;
+      }
+      .meta {
+        font-size: 11px;
+        color: #555;
+        margin-bottom: 10px;
+      }
+      .right {
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ system_name }}</h1>
+
+    <div class="meta">
+      <strong>Generated at:</strong> {{ generated_at|date:"Y-m-d H:i:s" }}<br />
+      <strong>User:</strong>
+      {% if user %} {{ user.username }} {% else %} Anonymous {% endif %}
+    </div>
+
+    <h2>Piglet Births Report</h2>
+
+    {% if start_date and end_date %}
+    <p>
+      Period:
+      <strong>{{ start_date|date:"Y-m-d" }}</strong>
+      to
+      <strong>{{ end_date|date:"Y-m-d" }}</strong>
+    </p>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Piglet Name</th>
+          <th>Sow Name</th>
+          <th>Date of Birth</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for piglet in report_data %}
+        <tr>
+          <td>{{ piglet.piglet_name }}</td>
+          <td>{{ piglet.sow_name }}</td>
+          <td>{{ piglet.birth_date|date:"Y-m-d" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">No piglets found in this period.</td>
+        </tr>
+        {% endfor %} {% if report_data %}
+        <tr>
+          <td colspan="2" class="right"><strong>Total Piglets:</strong></td>
+          <td class="right">{{ total_piglets }}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </body>
+</html>

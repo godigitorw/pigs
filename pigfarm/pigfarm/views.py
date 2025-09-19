@@ -8,7 +8,7 @@ from django.db.models import Sum
 from django.db.models import Max
 from health.models import WeightRecord
 from collections import defaultdict
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from health.models import WeightRecord, HealthRecord, VaccinationRecord
@@ -17,6 +17,12 @@ from farm.models import IncomeRecord
 from django.utils.timezone import now
 from datetime import timedelta
 from django.db.models import F
+
+
+def custom_logout(request):
+    logout(request)
+    messages.success(request, "You have been logged out successfully.")
+    return redirect('login')  # replace 'login' with your desired page after logout
 
 
 

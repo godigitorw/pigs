@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sow Report</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 12px;
+        margin: 30px;
+      }
+      h1,
+      h2 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      th {
+        background: #f2c94c;
+        color: #333;
+      }
+      .meta {
+        font-size: 11px;
+        color: #555;
+        margin-bottom: 10px;
+      }
+      .right {
+        text-align: right;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ system_name }}</h1>
+
+    <div class="meta">
+      <strong>Generated at:</strong> {{ generated_at|date:"Y-m-d H:i:s" }}<br />
+      <strong>User:</strong>
+      {% if user %} {{ user.username }} {% else %} Anonymous {% endif %}
+    </div>
+
+    <h2>Sow Report</h2>
+
+    {% if start_date and end_date %}
+    <p>
+      Period:
+      <strong>{{ start_date|date:"Y-m-d" }}</strong>
+      to
+      <strong>{{ end_date|date:"Y-m-d" }}</strong>
+    </p>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Animal Tag ID</th>
+          <th>Registered Date</th>
+          <th>Room</th>
+          <th>Birth Count</th>
+          <th>Piglet Count</th>
+          <th>Origin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sow in report_data %}
+        <tr>
+          <td>{{ sow.name }}</td>
+          <td>{{ sow.animal_tag_id|default:"-" }}</td>
+          <td>{{ sow.registered_date|date:"Y-m-d" }}</td>
+          <td>{{ sow.room }}</td>
+          <td class="right">{{ sow.birth_count }}</td>
+          <td class="right">{{ sow.piglet_count }}</td>
+          <td>{{ sow.origin }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">No sows found in this period.</td>
+        </tr>
+        {% endfor %} {% if report_data %}
+        <tr>
+          <td colspan="6" class="right"><strong>Total Active Sows:</strong></td>
+          <td class="right">{{ total_sows }}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </body>
+</html>

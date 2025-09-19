@@ -1,0 +1,182 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Finance Report PDF</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        margin: 40px;
+        color: #333;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        margin-bottom: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 25px;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+
+      th {
+        background-color: #f2f2f2;
+        text-align: center;
+      }
+
+      td.text-right {
+        text-align: right;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+
+      .badge-success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .badge-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .section-title {
+        background-color: #f8f9fa;
+        padding: 8px;
+        font-weight: bold;
+        border: 1px solid #ddd;
+      }
+
+      .small-text {
+        font-size: 11px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Finance Report</h1>
+
+    <p class="small-text">
+      Generated on {{ timestamp }}<br />
+      System: Pig Farm Management System<br />
+      User: {{ user.get_full_name|default:user.username }}
+    </p>
+
+    <hr />
+
+    <p>
+      <strong>Finance Type:</strong>
+      {% if finance_type == 'income' %} Incomes only {% elif finance_type ==
+      'expense' %} Expenses only {% else %} All Transactions {% endif %}
+    </p>
+
+    {% if start_date and end_date %}
+    <p><strong>Date Range:</strong> {{ start_date }} to {{ end_date }}</p>
+    {% endif %} {% if finance_type in 'all,income' %}
+    <div class="section-title">Incomes</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount (RWF)</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in incomes %}
+        <tr>
+          <td>{{ i.date }}</td>
+          <td>{{ i.category }}</td>
+          <td class="text-right">{{ i.amount|floatformat:0|intcomma }}</td>
+          <td>{{ i.note }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align: center">
+            No income records found.
+          </td>
+        </tr>
+        {% endfor %} {% if incomes %}
+        <tr>
+          <td colspan="2" style="text-align: right">
+            <strong>Total Income:</strong>
+          </td>
+          <td class="text-right">
+            <strong>{{ total_income|floatformat:0|intcomma }}</strong>
+          </td>
+          <td></td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    {% endif %} {% if finance_type in 'all,expense' %}
+    <div class="section-title">Expenses</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Amount (RWF)</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in expenses %}
+        <tr>
+          <td>{{ e.date }}</td>
+          <td>{{ e.category }}</td>
+          <td class="text-right">{{ e.amount|floatformat:0|intcomma }}</td>
+          <td>{{ e.note }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align: center">
+            No expense records found.
+          </td>
+        </tr>
+        {% endfor %} {% if expenses %}
+        <tr>
+          <td colspan="2" style="text-align: right">
+            <strong>Total Expenses:</strong>
+          </td>
+          <td class="text-right">
+            <strong>{{ total_expense|floatformat:0|intcomma }}</strong>
+          </td>
+          <td></td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    {% endif %} {% if finance_type == 'all' %}
+    <h3>
+      Net Balance: {% if net_balance >= 0 %}
+      <span class="badge badge-success"
+        >+{{ net_balance|floatformat:0|intcomma }} RWF</span
+      >
+      {% else %}
+      <span class="badge badge-danger"
+        >{{ net_balance|floatformat:0|intcomma }} RWF</span
+      >
+      {% endif %}
+    </h3>
+    {% endif %}
+  </body>
+</html>

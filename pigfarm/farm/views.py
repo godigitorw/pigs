@@ -803,12 +803,20 @@ def sell_sow(request):
         total_cost=total_cost
     )
 
+    # Mark sow as inactive
     sow.status = 'inactive'
     sow.save()
 
+    # ALSO save sow to InactivePig table with reason "sold"
+    InactivePig.objects.create(
+        pig_type='sow',
+        original_id=sow.unique_id,
+        name=sow.name,
+        reason='sold'
+    )
+
     messages.success(request, f'Sow "{sow.name}" sold successfully.')
     return redirect('sow_list')
-
 
 
 def piglet_profile(request, unique_id):
@@ -854,10 +862,14 @@ def sell_piglet(request):
     selling_price = Decimal(request.POST.get("selling_price"))
 
     piglet = get_object_or_404(Piglet, id=piglet_id)
-    total_cost = piglet.total_feeding_cost + piglet.total_health_cost + piglet.total_vaccination_cost
 
-    # make sure these exist
+    total_cost = (
+        piglet.total_feeding_cost +
+        piglet.total_health_cost +
+        piglet.total_vaccination_cost
+    )
 
+    # Create SoldPig record
     SoldPig.objects.create(
         pig_type='piglet',
         piglet=piglet,
@@ -865,11 +877,20 @@ def sell_piglet(request):
         total_cost=total_cost
     )
 
+    # Mark piglet as inactive
     piglet.status = 'inactive'
     piglet.save()
 
+    # ALSO save piglet to InactivePig table with reason "sold"
+    InactivePig.objects.create(
+        pig_type='piglet',
+        original_id=piglet.id,
+        name=piglet.name,
+        reason='sold'
+    )
+
     messages.success(request, f"Piglet '{piglet.name}' sold successfully.")
-    return redirect('piglets')  # make sure 'piglets' is a valid URL name
+    return redirect('piglets')  # ensure 'piglets' is a valid URL name
 
 
 

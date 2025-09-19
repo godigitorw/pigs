@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container my-5">
+    <a href="{% url 'dashboard' %}" class="btn btn-primary mb-4">Go to Dashboard</a>
+  <h1 class="fw-bold mb-4">Sow Report</h1>
+
+  <!-- FILTER FORM -->
+  <form method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-auto">
+      <label for="range" class="form-label fw-semibold">Date Range</label>
+      <select name="range" id="range" class="form-select">
+        <option value="week" {% if range == 'week' %}selected{% endif %}>This Week</option>
+        <option value="month" {% if range == 'month' %}selected{% endif %}>This Month</option>
+        <option value="custom" {% if range == 'custom' %}selected{% endif %}>Custom</option>
+      </select>
+    </div>
+
+    <div class="col-auto custom-range-fields" {% if range != 'custom' %}style="display:none;"{% endif %}>
+      <label for="start_date" class="form-label fw-semibold">Start Date</label>
+      <input type="date" name="start_date" id="start_date" class="form-control" value="{{ start_date|date:'Y-m-d' }}">
+    </div>
+
+    <div class="col-auto custom-range-fields" {% if range != 'custom' %}style="display:none;"{% endif %}>
+      <label for="end_date" class="form-label fw-semibold">End Date</label>
+      <input type="date" name="end_date" id="end_date" class="form-control" value="{{ end_date|date:'Y-m-d' }}">
+    </div>
+
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary fw-bold px-4">Filter</button>
+    </div>
+
+    {% if range or start_date or end_date %}
+    <div class="col-auto">
+      <a href="{% url 'sow_report' %}" class="btn btn-light fw-bold">Reset</a>
+    </div>
+    {% endif %}
+  </form>
+
+  {% if start_date and end_date %}
+    <p class="text-muted">
+      Showing sows registered from
+      <strong>{{ start_date|date:"Y-m-d" }}</strong>
+      to
+      <strong>{{ end_date|date:"Y-m-d" }}</strong>.
+    </p>
+  {% endif %}
+
+  <!-- SOWS TABLE -->
+  <div class="table-responsive mt-4">
+    <table class="table table-bordered table-hover align-middle shadow-sm rounded">
+      <thead class="table-warning text-center">
+        <tr>
+          <th>Name</th>
+          <th>Animal Tag ID</th>
+          <th>Registered Date</th>
+          <th>Room</th>
+          <th>Birth Count</th>
+          <th>Piglet Count</th>
+          <th>Origin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sow in report_data %}
+        <tr>
+          <td>
+            <a href="#" class="fw-bold text-decoration-none text-dark">
+              {{ sow.name }}
+            </a>
+          </td>
+          <td class="text-primary fw-semibold">
+            {{ sow.animal_tag_id|default:"-" }}
+          </td>
+          <td class="text-muted">
+            {{ sow.registered_date|date:"Y-m-d" }}
+          </td>
+          <td class="text-secondary">
+            {{ sow.room }}
+          </td>
+          <td class="text-center">
+            <span class="badge bg-info-subtle text-info fw-bold">
+              {{ sow.birth_count }}
+            </span>
+          </td>
+          <td class="text-center">
+            <span class="badge bg-success-subtle text-success fw-bold">
+              {{ sow.piglet_count }}
+            </span>
+          </td>
+          <td class="text-secondary">
+            {{ sow.origin }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted">
+            No sows registered in this period.
+          </td>
+        </tr>
+        {% endfor %}
+        {% if report_data %}
+        <tr class="fw-bold table-light">
+          <td colspan="6" class="text-end">Total Active Sows:</td>
+          <td class="text-end text-primary">{{ total_sows|intcomma }}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+  <a href="{% url 'sow_report_pdf' %}?range={{ range }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" class="btn btn-danger fw-bold mb-4">
+  Download PDF
+</a>
+</div>
+
+<script>
+  document.getElementById('range').addEventListener('change', function () {
+    const customFields = document.querySelectorAll('.custom-range-fields');
+    if (this.value === 'custom') {
+      customFields.forEach(el => el.style.display = 'block');
+    } else {
+      customFields.forEach(el => el.style.display = 'none');
+    }
+  });
+</script>
+{% endblock %}
