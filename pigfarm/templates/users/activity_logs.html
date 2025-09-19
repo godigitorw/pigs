@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Activity Logs - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-end">
+          <div class="col">
+            <h6 class="header-pretitle">Administration</h6>
+            <h1 class="header-title">User Activity Logs</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- Filters -->
+    <div class="card">
+      <div class="card-body">
+        <form method="GET" class="row g-3">
+          <div class="col-md-3">
+            <input type="text" class="form-control" name="user" value="{{ user_filter }}" placeholder="Search by user...">
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" name="action">
+              <option value="">All Actions</option>
+              <option value="login" {% if action_filter == 'login' %}selected{% endif %}>Login</option>
+              <option value="logout" {% if action_filter == 'logout' %}selected{% endif %}>Logout</option>
+              <option value="create" {% if action_filter == 'create' %}selected{% endif %}>Create</option>
+              <option value="update" {% if action_filter == 'update' %}selected{% endif %}>Update</option>
+              <option value="delete" {% if action_filter == 'delete' %}selected{% endif %}>Delete</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" name="module">
+              <option value="">All Modules</option>
+              <option value="farm" {% if module_filter == 'farm' %}selected{% endif %}>Farm</option>
+              <option value="feeding" {% if module_filter == 'feeding' %}selected{% endif %}>Feeding</option>
+              <option value="health" {% if module_filter == 'health' %}selected{% endif %}>Health</option>
+              <option value="breeding" {% if module_filter == 'breeding' %}selected{% endif %}>Breeding</option>
+              <option value="users" {% if module_filter == 'users' %}selected{% endif %}>Users</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <input type="date" class="form-control" name="date_from" value="{{ date_from }}">
+          </div>
+          <div class="col-md-2">
+            <input type="date" class="form-control" name="date_to" value="{{ date_to }}">
+          </div>
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-primary">Filter</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Activity Table -->
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-header-title">Activity Log</h4>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-nowrap card-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>User</th>
+              <th>Action</th>
+              <th>Module</th>
+              <th>Object</th>
+              <th>IP Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for activity in activities %}
+            <tr>
+              <td>{{ activity.timestamp|date:"M d, Y H:i" }}</td>
+              <td>
+                <strong>{{ activity.user.get_full_name|default:activity.user.username }}</strong>
+                {% if activity.user.role %}
+                  <br><small class="text-muted">{{ activity.user.role.display_name }}</small>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge bg-{% if activity.action == 'create' %}success{% elif activity.action == 'update' %}warning{% elif activity.action == 'delete' %}danger{% elif activity.action == 'login' %}info{% else %}secondary{% endif %}">
+                  {{ activity.get_action_display }}
+                </span>
+              </td>
+              <td>{{ activity.module|title }}</td>
+              <td>{{ activity.object_repr|default:"-" }}</td>
+              <td><code>{{ activity.ip_address }}</code></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4">
+                <div class="text-muted">
+                  <i class="fe fe-activity fs-1 mb-3"></i>
+                  <p>No activity logs found.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if activities.has_other_pages %}
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <small class="text-muted">
+            Showing {{ activities.start_index }} to {{ activities.end_index }} of {{ activities.paginator.count }} activities
+          </small>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              {% if activities.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ activities.previous_page_number }}">Previous</a>
+                </li>
+              {% endif %}
+
+              {% for num in activities.paginator.page_range %}
+                {% if activities.number == num %}
+                  <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                  </li>
+                {% elif num > activities.number|add:'-3' and num < activities.number|add:'3' %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if activities.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ activities.next_page_number }}">Next</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

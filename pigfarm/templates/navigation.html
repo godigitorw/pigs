@@ -1,4 +1,6 @@
-{% load static %} {% include 'offconvas.html' %}
+{% load static %}
+{% load user_permissions %}
+{% include 'offconvas.html' %}
 <div data-bs-theme="">
   <nav class="navbar navbar-vertical fixed-start navbar-expand-md" id="sidebar">
     <div class="container-fluid">
@@ -87,6 +89,8 @@
               <i class="fe fe-grid"></i> Dashboard
             </a>
           </li>
+          <!-- Pigs Management - Only for Owner/Admin and Farm Manager -->
+          {% if user.role and user.role.name == 'farm_owner' or user.role.name == 'farm_manager' %}
           <li class="nav-item">
             <a
               class="nav-link"
@@ -109,13 +113,11 @@
                 <li class="nav-item">
                   <a href="{% url 'piglets' %}" class="nav-link"> Piglets </a>
                 </li>
-
                 <li class="nav-item">
                   <a href="{% url 'inactive_pigs_list' %}" class="nav-link">
                     View Inactive Pigs
                   </a>
                 </li>
-
                 <li class="nav-item">
                   <a href="{% url 'insemination_list' %}" class="nav-link">
                     Insemination Types
@@ -124,6 +126,9 @@
               </ul>
             </div>
           </li>
+          {% endif %}
+          <!-- Feeding Management - For Owner/Admin and Farm Worker -->
+          {% if user.role and user.role.name == 'farm_owner' or user.role.name == 'farm_worker' %}
           <li class="nav-item">
             <a
               class="nav-link"
@@ -152,7 +157,10 @@
               </ul>
             </div>
           </li>
+          {% endif %}
 
+          <!-- Health Management - For Owner/Admin and Farm Worker -->
+          {% if user.role and user.role.name == 'farm_owner' or user.role.name == 'farm_worker' %}
           <li class="nav-item">
             <a
               class="nav-link"
@@ -219,7 +227,10 @@
               </ul>
             </div>
           </li>
+          {% endif %}
 
+          <!-- Financial Records - Only for Owner/Admin -->
+          {% if user.role and user.role.name == 'farm_owner' %}
           <li class="nav-item">
             <a
               class="nav-link {% if request.path == '/income/' %}active{% endif %}"
@@ -234,6 +245,94 @@
               <i class="fe fe-dollar-sign me-2"></i> Expenses
             </a>
           </li>
+          {% endif %}
+
+          <!-- Reports Section - Only for Owner/Admin -->
+          {% if user.role and user.role.name == 'farm_owner' %}
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#reports"
+              data-bs-toggle="collapse"
+              role="button"
+              aria-expanded="false"
+              aria-controls="reports"
+            >
+              <i class="fe fe-bar-chart-2"></i> Reports
+            </a>
+            <div class="collapse" id="reports">
+              <ul class="nav nav-sm flex-column">
+                <li class="nav-item">
+                  <a href="{% url 'finance_report' %}" class="nav-link">
+                    Finance Report
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'piglet_births_report' %}" class="nav-link">
+                    Piglet Births Report
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'sow_report' %}" class="nav-link">
+                    Sow Report
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'weight_report' %}" class="nav-link">
+                    Weight Report
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'feeding_cost_report' %}" class="nav-link">
+                    Feeding Cost Report
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
+
+          <!-- User Management Section - Only for Owner/Admin -->
+          {% if user.role and user.role.name == 'farm_owner' %}
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#userManagement"
+              data-bs-toggle="collapse"
+              role="button"
+              aria-expanded="false"
+              aria-controls="userManagement"
+            >
+              <i class="fe fe-users"></i> User Management
+            </a>
+            <div class="collapse" id="userManagement">
+              <ul class="nav nav-sm flex-column">
+                {% if user.role.name == 'farm_owner' %}
+                <li class="nav-item">
+                  <a href="{% url 'users:user_management' %}" class="nav-link">
+                    <i class="fe fe-user-plus"></i> Manage Users
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'users:role_permissions' %}" class="nav-link">
+                    <i class="fe fe-shield"></i> Roles & Permissions
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'users:user_sessions' %}" class="nav-link">
+                    <i class="fe fe-monitor"></i> Active Sessions
+                  </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                  <a href="{% url 'users:activity_logs' %}" class="nav-link">
+                    <i class="fe fe-activity"></i> Activity Logs
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
         </ul>
 
         <!-- Push content down -->
@@ -243,15 +342,36 @@
 
         <!-- User (md) -->
         <div
-          class="navbar-user d-none d-md-flex align-items-center"
+          class="navbar-user d-none d-md-flex flex-column align-items-start"
           id="sidebarUser"
         >
-          <span class="fw-semibold text-dark me-3">
-            {{ request.user.username }}
-          </span>
-          <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">
-            <i class="fe fe-log-out me-1"></i> Logout
-          </a>
+          <div class="d-flex align-items-center w-100 mb-2">
+            <div class="avatar avatar-sm me-2">
+              {% if request.user.profile_picture %}
+                <img src="{{ request.user.profile_picture.url }}" class="avatar-img rounded-circle" alt="Profile">
+              {% else %}
+                <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                  {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                </div>
+              {% endif %}
+            </div>
+            <div class="flex-fill">
+              <span class="fw-semibold text-dark d-block">
+                {{ request.user.get_full_name|default:request.user.username }}
+              </span>
+              {% if request.user.role %}
+                <small class="text-muted">{{ request.user.role.display_name }}</small>
+              {% endif %}
+            </div>
+          </div>
+          <div class="d-flex w-100">
+            <a href="{% url 'users:profile' %}" class="btn btn-sm btn-outline-secondary me-2">
+              <i class="fe fe-user me-1"></i> Profile
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">
+              <i class="fe fe-log-out me-1"></i> Logout
+            </a>
+          </div>
         </div>
       </div>
       <!-- / .navbar-collapse -->

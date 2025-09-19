@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-end">
+          <div class="col">
+            <h6 class="header-pretitle">Account</h6>
+            <h1 class="header-title">My Profile</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12 col-lg-8">
+        <!-- Profile Information -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">Profile Information</h4>
+          </div>
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_profile">
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Username</label>
+                  <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-control" name="email" value="{{ user.email }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Phone Number</label>
+                  <input type="tel" class="form-control" name="phone_number" value="{{ user.phone_number }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Role</label>
+                  <input type="text" class="form-control" value="{{ user.get_role_display }}" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Employee ID</label>
+                  <input type="text" class="form-control" value="{{ user.employee_id }}" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Department</label>
+                  <input type="text" class="form-control" value="{{ user.department }}" readonly>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Address</label>
+                  <textarea class="form-control" name="address" rows="2">{{ user.address }}</textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Emergency Contact</label>
+                  <input type="text" class="form-control" name="emergency_contact" value="{{ user.emergency_contact }}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Emergency Phone</label>
+                  <input type="tel" class="form-control" name="emergency_phone" value="{{ user.emergency_phone }}">
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">Change Password</h4>
+          </div>
+          <div class="card-body">
+            <form method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="change_password">
+
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label">Current Password</label>
+                  <input type="password" class="form-control" name="old_password" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-control" name="new_password1" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" name="new_password2" required>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <button type="submit" class="btn btn-danger">Change Password</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <!-- Account Summary -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">Account Summary</h4>
+          </div>
+          <div class="card-body text-center">
+            <div class="avatar avatar-xl mx-auto mb-3">
+              {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" class="avatar-img rounded-circle" alt="Profile">
+              {% else %}
+                <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                  <span class="fs-3">{{ user.first_name|first|default:user.username|first|upper }}</span>
+                </div>
+              {% endif %}
+            </div>
+            <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+            <p class="text-muted mb-3">{{ user.get_role_display }}</p>
+
+            <div class="row text-center">
+              <div class="col-6">
+                <h6 class="text-uppercase text-muted mb-1">Member Since</h6>
+                <span class="h6">{{ user.date_joined|date:"M Y" }}</span>
+              </div>
+              <div class="col-6">
+                <h6 class="text-uppercase text-muted mb-1">Last Login</h6>
+                <span class="h6">
+                  {% if user.last_login %}
+                    {{ user.last_login|date:"M d" }}
+                  {% else %}
+                    Never
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">Recent Activity</h4>
+          </div>
+          <div class="card-body">
+            {% if recent_activities %}
+              {% for activity in recent_activities|slice:":5" %}
+                <div class="d-flex align-items-center mb-3">
+                  <div class="me-3">
+                    <i class="fe fe-{% if activity.action == 'create' %}plus{% elif activity.action == 'update' %}edit{% elif activity.action == 'delete' %}trash{% else %}activity{% endif %} text-primary"></i>
+                  </div>
+                  <div class="flex-fill">
+                    <p class="mb-0">
+                      <strong>{{ activity.get_action_display }}</strong> in {{ activity.module }}
+                      {% if activity.object_repr %}
+                        <br><small class="text-muted">{{ activity.object_repr }}</small>
+                      {% endif %}
+                    </p>
+                    <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted text-center">No recent activity</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

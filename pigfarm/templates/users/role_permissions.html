@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Role Permissions - Pig Farm{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-end">
+          <div class="col">
+            <h6 class="header-pretitle">Administration</h6>
+            <h1 class="header-title">Role Permissions</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- Roles Overview -->
+    <div class="row">
+      {% for role in roles %}
+      <div class="col-12 col-lg-6 col-xl-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="card-title text-uppercase text-muted mb-2">
+                  {{ role.display_name }}
+                </h6>
+                <span class="h2 mb-0">
+                  {{ role.permissions.count }} permissions
+                </span>
+              </div>
+              <div class="col-auto">
+                <span class="h2 fe fe-{% if role.name == 'farm_owner' %}crown{% elif role.name == 'farm_manager' %}users{% elif role.name == 'farm_worker' %}tool{% endif %} text-muted mb-0"></span>
+              </div>
+            </div>
+            <div class="row align-items-center no-gutters">
+              <div class="col-auto">
+                <div class="small text-muted">
+                  {{ role.description }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Detailed Permissions Table -->
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-header-title">Detailed Role Permissions</h4>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-nowrap card-table">
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Permission</th>
+              {% for role in roles %}
+                <th class="text-center">{{ role.display_name }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for permission in permissions %}
+            <tr>
+              <td>
+                <span class="badge bg-soft-primary text-primary">
+                  {{ permission.module|title }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ permission.get_permission_type_display }}</strong>
+                <br>
+                <small class="text-muted">{{ permission.description }}</small>
+              </td>
+              {% for role in roles %}
+                <td class="text-center">
+                  {% if role.permissions.all|length > 0 %}
+                    {% for role_perm in role.permissions.all %}
+                      {% if role_perm.permission.id == permission.id %}
+                        <i class="fe fe-check text-success"></i>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Role Details -->
+    <div class="row">
+      {% for role in roles %}
+      <div class="col-12 col-xl-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">
+              <i class="fe fe-{% if role.name == 'farm_owner' %}crown{% elif role.name == 'farm_manager' %}users{% elif role.name == 'farm_worker' %}tool{% endif %} me-2"></i>
+              {{ role.display_name }}
+            </h4>
+          </div>
+          <div class="card-body">
+            <p class="text-muted mb-3">{{ role.description }}</p>
+
+            <h6 class="mb-2">Permissions:</h6>
+            <div class="row">
+              {% for role_perm in role.permissions.all %}
+              <div class="col-12 col-sm-6 mb-2">
+                <div class="d-flex align-items-center">
+                  <div class="badge bg-soft-success text-success me-2">
+                    {{ role_perm.permission.module|title }}
+                  </div>
+                  <small>{{ role_perm.permission.get_permission_type_display }}</small>
+                </div>
+              </div>
+              {% empty %}
+              <div class="col-12">
+                <small class="text-muted">No permissions assigned</small>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="mt-3">
+              <small class="text-muted">
+                <strong>Created:</strong> {{ role.created_at|date:"M d, Y" }} |
+                <strong>Status:</strong>
+                <span class="badge bg-{% if role.is_active %}success{% else %}secondary{% endif %}">
+                  {% if role.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

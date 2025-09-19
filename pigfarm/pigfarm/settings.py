@@ -56,8 +56,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'users.middleware.UserSessionMiddleware',
+    'users.middleware.RoleBasedAccessMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.ActivityLogMiddleware',
 ]
 
 ROOT_URLCONF = 'pigfarm.urls'
@@ -127,6 +130,9 @@ USE_TZ = True
 
 LOGIN_URL = '/login/'  # URL where users are redirected if not logged in
 LOGIN_REDIRECT_URL = '/dashboard/'  # optional: where to go after login
+
+# Custom User Model
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 # Static files (CSS, JavaScript, Images)

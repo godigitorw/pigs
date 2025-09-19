@@ -14,6 +14,7 @@ urlpatterns = [
     path('', dashboard_view, name='dashboard'),
     path('health/', include('health.urls')),
     path('reports/', include('reports.urls')),
+    path('users/', include('users.urls')),
     path('login/', login_view, name='login'),
     path('logout/', custom_logout, name='logout'),
 

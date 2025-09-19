@@ -20,11 +20,12 @@ Farm{% endblock %} {% block content %} {% include 'navigation.html' %}
             <h1 class="header-title">Dashboard</h1>
           </div>
           <div class="col-auto">
-            <!-- Button -->
-            <!-- Button -->
-<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reportModal">
-  Create Report
-</button>
+            <!-- Button - Only for Owner/Admin -->
+            {% if user.role and user.role.name == 'farm_owner' %}
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reportModal">
+              Create Report
+            </button>
+            {% endif %}
 
 <!-- Modal -->
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
@@ -36,21 +37,30 @@ Farm{% endblock %} {% block content %} {% include 'navigation.html' %}
       </div>
       <div class="modal-body">
         <div class="list-group">
+          <!-- Finance Report - Only for Owner/Admin -->
+          {% if user.role and user.role.name == 'farm_owner' %}
           <a href="{% url 'finance_report' %}" class="list-group-item list-group-item-action">
-            Finance Report
+            <i class="fe fe-dollar-sign me-2"></i>Finance Report
           </a>
+          {% endif %}
+
+          <!-- Farm Reports - Available for all except viewer -->
           <a href="{% url 'piglet_births_report' %}" class="list-group-item list-group-item-action">
-            Piglet Births Report
+            <i class="fe fe-heart me-2"></i>Piglet Births Report
           </a>
           <a href="{% url 'sow_report' %}" class="list-group-item list-group-item-action">
-            Sow Report
+            <i class="fe fe-users me-2"></i>Sow Report
           </a>
           <a href="{% url 'weight_report' %}" class="list-group-item list-group-item-action">
-            Weight Monitoring Report
+            <i class="fe fe-trending-up me-2"></i>Weight Monitoring Report
           </a>
+
+          <!-- Feeding Report - Only for Owner/Admin -->
+          {% if user.role and user.role.name == 'farm_owner' %}
           <a href="{% url 'feeding_cost_report' %}" class="list-group-item list-group-item-action">
-            Feeding Cost Report
+            <i class="fe fe-shopping-bag me-2"></i>Feeding Cost Report
           </a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -66,7 +76,8 @@ Farm{% endblock %} {% block content %} {% include 'navigation.html' %}
   <!-- / .header -->
 
   <div class="container-fluid">
-    <!-- Financial Cards Container -->
+    <!-- Financial Cards Container - Only for Owner/Admin -->
+    {% if user.role and user.role.name == 'farm_owner' %}
     <div class="p-4 rounded-4 mb-4" style="background-color: rgba(9, 118, 18, 0.1);">
       <div class="row">
         <div class="col-12 col-lg-4">
@@ -302,6 +313,7 @@ Farm{% endblock %} {% block content %} {% include 'navigation.html' %}
         </div>
       </div>
     </div>
+    {% endif %}
     <div class="row">
       <div class="col-12 col-lg-4">
         <!-- Hours -->
