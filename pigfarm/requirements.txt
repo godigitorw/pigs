@@ -37,3 +37,5 @@ weasyprint==65.1
 webencodings==0.5.1
 xlsxwriter==3.2.5
 zopfli==0.2.3.post1
+whitenoise==6.8.2
+dj-database-url==2.3.0
