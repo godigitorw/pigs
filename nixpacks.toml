@@ -1,13 +1,18 @@
 [phases.setup]
+aptPkgs = [
+    'libglib2.0-0',
+    'libcairo2',
+    'libpango-1.0-0',
+    'libpangocairo-1.0-0',
+    'libgdk-pixbuf2.0-0',
+    'libffi-dev',
+    'shared-mime-info',
+    'libharfbuzz0b',
+    'libpangoft2-1.0-0'
+]
+
 nixPkgs = [
     'python313',
     'postgresql_16.dev',
-    'gcc',
-    'glib',
-    'cairo',
-    'pango',
-    'gdk-pixbuf',
-    'libffi',
-    'harfbuzz',
-    'gobject-introspection'
+    'gcc'
 ]
