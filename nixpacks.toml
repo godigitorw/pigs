@@ -1,0 +1,13 @@
+[phases.setup]
+nixPkgs = [
+    'python313',
+    'postgresql_16.dev',
+    'gcc',
+    'glib',
+    'cairo',
+    'pango',
+    'gdk-pixbuf',
+    'libffi',
+    'harfbuzz',
+    'gobject-introspection'
+]
