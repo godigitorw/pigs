@@ -8,7 +8,6 @@ from farm.models import IncomeRecord, SoldPig, ExpenseRecord, FeedingRecord
 from django.shortcuts import render
 from farm.models import Piglet, Sow
 from django.template.loader import render_to_string
-from weasyprint import HTML
 from health.models import WeightRecord
 import datetime
 import pdfkit
@@ -201,6 +200,8 @@ def finance_report_export(request):
 
 
 def finance_report_pdf(request):
+    from weasyprint import HTML
+
     range_type = request.GET.get('range', 'week')
     finance_type = request.GET.get('finance_type', 'all')
     today = datetime.date.today()
@@ -347,6 +348,8 @@ def piglet_births_report(request):
     return render(request, 'reports/piglet_births_report.html', context)
 
 def piglet_births_report_pdf(request):
+    from weasyprint import HTML
+
     user = request.user if request.user.is_authenticated else None
     generated_at = timezone.now()
 
@@ -450,6 +453,8 @@ def sow_report(request):
 
 
 def sow_report_pdf(request):
+    from weasyprint import HTML
+
     user = request.user if request.user.is_authenticated else None
     generated_at = timezone.now()
 
@@ -577,6 +582,8 @@ def weight_report(request):
 
 
 def weight_report_pdf(request):
+    from weasyprint import HTML
+
     user = request.user if request.user.is_authenticated else None
     generated_at = timezone.now()
 
@@ -723,6 +730,8 @@ def feeding_cost_report(request):
 
 
 def feeding_cost_report_pdf(request):
+    from weasyprint import HTML
+
     user = request.user if request.user.is_authenticated else None
     generated_at = timezone.now()
 
