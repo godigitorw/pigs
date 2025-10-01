@@ -191,7 +191,9 @@ if 'RAILWAY_ENVIRONMENT' in os.environ:
     DEBUG = False
     # Railway uses RAILWAY_STATIC_URL for static files
     if 'RAILWAY_STATIC_URL' in os.environ:
-        STATIC_URL = os.environ.get('RAILWAY_STATIC_URL')
+        static_url = os.environ.get('RAILWAY_STATIC_URL')
+        # Ensure STATIC_URL ends with a slash
+        STATIC_URL = static_url if static_url.endswith('/') else static_url + '/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
