@@ -183,6 +183,16 @@ if 'RENDER' in os.environ:
         ALLOWED_HOSTS = ['*']
     DEBUG = False
 
+# Additional settings for Railway
+if 'RAILWAY_ENVIRONMENT' in os.environ:
+    # Override ALLOWED_HOSTS for Railway if not specifically set
+    if 'ALLOWED_HOSTS' not in os.environ:
+        ALLOWED_HOSTS = ['*']
+    DEBUG = False
+    # Railway uses RAILWAY_STATIC_URL for static files
+    if 'RAILWAY_STATIC_URL' in os.environ:
+        STATIC_URL = os.environ.get('RAILWAY_STATIC_URL')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
