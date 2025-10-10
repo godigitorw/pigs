@@ -108,9 +108,14 @@
       </tbody>
     </table>
   </div>
-  <a href="{% url 'sow_report_pdf' %}?range={{ range }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" class="btn btn-danger fw-bold mb-4">
-  Download PDF
-</a>
+  {% if report_data %}
+    <a href="{% url 'sow_report_export' %}?range={{ range }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" class="btn btn-success fw-bold mt-4 px-4">
+      Download Excel
+    </a>
+    <a href="{% url 'sow_report_pdf' %}?range={{ range }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d' }}{% endif %}" class="btn btn-danger fw-bold mt-4 px-4 ms-3">
+      Download PDF
+    </a>
+  {% endif %}
 </div>
 
 <script>

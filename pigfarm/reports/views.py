@@ -755,13 +755,13 @@ def feeding_cost_report_pdf(request):
     records = []
     if start_date and end_date:
         query = FeedingRecord.objects.filter(
-            date__range=(start_date, end_date)
-        ).select_related('sow', 'piglet')
+            recorded_at__date__range=(start_date, end_date)
+        ).select_related('sow', 'piglet', 'feed')
 
         if pig_type == 'sow':
-            query = query.filter(sow__isnull=False)
+            query = query.filter(feeding_target_type='sow')
         elif pig_type == 'piglet':
-            query = query.filter(piglet__isnull=False)
+            query = query.filter(feeding_target_type='piglet')
 
         for record in query:
             if record.sow:
@@ -781,9 +781,9 @@ def feeding_cost_report_pdf(request):
                 'pig_type': pig_type_val,
                 'name': name,
                 'tag': tag,
-                'date': record.date,
-                'feed_name': record.feed_name,
-                'quantity': record.quantity,
+                'date': record.recorded_at.date(),
+                'feed_name': record.feed.name if record.feed else '-',
+                'quantity': record.quantity_used,
                 'total_cost': record.total_cost,
             })
 
@@ -809,4 +809,251 @@ def feeding_cost_report_pdf(request):
 
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="feeding_cost_report.pdf"'
+    return response
+
+
+def feeding_cost_report_export(request):
+    """Export feeding cost report to Excel"""
+    range_type = request.GET.get('range', 'week')
+    pig_type = request.GET.get('pig_type', 'all')
+    today = timezone.now().date()
+
+    if range_type == 'week':
+        start_date = today - timedelta(days=7)
+        end_date = today
+    elif range_type == 'month':
+        start_date = today.replace(day=1)
+        end_date = today
+    elif range_type == 'custom':
+        start_date = parse_date(request.GET.get('start_date'))
+        end_date = parse_date(request.GET.get('end_date'))
+    else:
+        start_date = today - timedelta(days=30)
+        end_date = today
+
+    records = []
+    if start_date and end_date:
+        query = FeedingRecord.objects.filter(
+            recorded_at__date__range=(start_date, end_date)
+        ).select_related('sow', 'piglet', 'feed')
+
+        if pig_type == 'sow':
+            query = query.filter(feeding_target_type='sow')
+        elif pig_type == 'piglet':
+            query = query.filter(feeding_target_type='piglet')
+
+        for record in query:
+            if record.sow:
+                pig_type_val = 'Sow'
+                name = record.sow.name
+                tag = record.sow.animal_tag_id
+            elif record.piglet:
+                pig_type_val = 'Piglet'
+                name = record.piglet.name
+                tag = record.piglet.animal_tag_id
+            else:
+                pig_type_val = '-'
+                name = '-'
+                tag = '-'
+
+            records.append({
+                'Pig Type': pig_type_val,
+                'Name': name,
+                'Tag ID': tag,
+                'Date': record.recorded_at.date(),
+                'Feed Name': record.feed.name if record.feed else '-',
+                'Quantity (kg)': float(record.quantity_used),
+                'Total Cost (RWF)': float(record.total_cost),
+            })
+
+    df = pd.DataFrame(records)
+    if df.empty:
+        df = pd.DataFrame(columns=['Pig Type', 'Name', 'Tag ID', 'Date', 'Feed Name', 'Quantity (kg)', 'Total Cost (RWF)'])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Feeding Cost Report', index=False)
+
+    output.seek(0)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="feeding_cost_report.xlsx"'
+    return response
+
+
+def piglet_births_report_export(request):
+    """Export piglet births report to Excel"""
+    range_type = request.GET.get('range', 'week')
+    today = timezone.now().date()
+
+    if range_type == 'week':
+        start_date = today - timedelta(days=7)
+        end_date = today
+    elif range_type == 'month':
+        start_date = today.replace(day=1)
+        end_date = today
+    elif range_type == 'custom':
+        start_date = parse_date(request.GET.get('start_date'))
+        end_date = parse_date(request.GET.get('end_date'))
+    else:
+        start_date = today - timedelta(days=30)
+        end_date = today
+
+    piglets = []
+    if start_date and end_date:
+        piglets = Piglet.objects.filter(
+            birth_date__range=(start_date, end_date),
+            status='active'
+        ).select_related('sow')
+
+    report_data = []
+    for piglet in piglets:
+        report_data.append({
+            'Piglet Name': piglet.name,
+            'Sow Name': piglet.sow.name if piglet.sow else 'Unknown',
+            'Birth Date': piglet.birth_date,
+        })
+
+    df = pd.DataFrame(report_data)
+    if df.empty:
+        df = pd.DataFrame(columns=['Piglet Name', 'Sow Name', 'Birth Date'])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Piglet Births', index=False)
+
+    output.seek(0)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="piglet_births_report.xlsx"'
+    return response
+
+
+def sow_report_export(request):
+    """Export sow report to Excel"""
+    range_type = request.GET.get('range', 'week')
+    today = timezone.now().date()
+
+    if range_type == 'week':
+        start_date = today - timedelta(days=7)
+        end_date = today
+    elif range_type == 'month':
+        start_date = today.replace(day=1)
+        end_date = today
+    elif range_type == 'custom':
+        start_date = parse_date(request.GET.get('start_date'))
+        end_date = parse_date(request.GET.get('end_date'))
+    else:
+        start_date = today - timedelta(days=30)
+        end_date = today
+
+    sows = []
+    if start_date and end_date:
+        sows = Sow.objects.filter(
+            registered_date__range=(start_date, end_date),
+            status='active'
+        ).select_related('room')
+
+    report_data = []
+    for sow in sows:
+        report_data.append({
+            'Name': sow.name,
+            'Tag ID': sow.animal_tag_id,
+            'Registered Date': sow.registered_date,
+            'Room': sow.room.name if sow.room else 'N/A',
+            'Birth Count': sow.birth_count,
+            'Piglet Count': sow.piglets.count(),
+            'Origin': sow.get_origin_display(),
+        })
+
+    df = pd.DataFrame(report_data)
+    if df.empty:
+        df = pd.DataFrame(columns=['Name', 'Tag ID', 'Registered Date', 'Room', 'Birth Count', 'Piglet Count', 'Origin'])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Sow Report', index=False)
+
+    output.seek(0)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="sow_report.xlsx"'
+    return response
+
+
+def weight_report_export(request):
+    """Export weight report to Excel"""
+    range_type = request.GET.get('range', 'week')
+    pig_type = request.GET.get('pig_type', 'all')
+    today = timezone.now().date()
+
+    if range_type == 'week':
+        start_date = today - timedelta(days=7)
+        end_date = today
+    elif range_type == 'month':
+        start_date = today.replace(day=1)
+        end_date = today
+    elif range_type == 'custom':
+        start_date = parse_date(request.GET.get('start_date'))
+        end_date = parse_date(request.GET.get('end_date'))
+    else:
+        start_date = today - timedelta(days=30)
+        end_date = today
+
+    records = []
+    if start_date and end_date:
+        query = WeightRecord.objects.filter(
+            recorded_date__range=(start_date, end_date)
+        ).select_related('sow', 'piglet')
+
+        if pig_type in ['sow', 'piglet']:
+            query = query.filter(target_type=pig_type)
+
+        for record in query:
+            if record.target_type == 'sow' and record.sow:
+                name = record.sow.name
+                tag = record.sow.animal_tag_id
+            elif record.target_type == 'piglet' and record.piglet:
+                name = record.piglet.name
+                tag = record.piglet.animal_tag_id
+            else:
+                name = "-"
+                tag = "-"
+
+            if record.weight < 50:
+                status = "Underweight"
+            elif 50 <= record.weight < 250:
+                status = "Ideal"
+            else:
+                status = "Overweight"
+
+            records.append({
+                'Pig Type': record.get_target_type_display(),
+                'Name': name,
+                'Tag ID': tag,
+                'Date': record.recorded_date,
+                'Weight (kg)': float(record.weight),
+                'Status': status,
+            })
+
+    df = pd.DataFrame(records)
+    if df.empty:
+        df = pd.DataFrame(columns=['Pig Type', 'Name', 'Tag ID', 'Date', 'Weight (kg)', 'Status'])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, sheet_name='Weight Report', index=False)
+
+    output.seek(0)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="weight_report.xlsx"'
     return response
