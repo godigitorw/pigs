@@ -514,7 +514,75 @@ class ExpenseRecord(models.Model):
 
     def __str__(self):
         return f"{self.get_category_display()} - {self.amount} RWF"
-    
+
+
+
+class BankAccount(models.Model):
+    """Model to track bank accounts"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    account_name = models.CharField(max_length=200, help_text="Name of the bank account")
+    bank_name = models.CharField(max_length=200, help_text="Name of the bank")
+    account_number = models.CharField(max_length=100, unique=True, help_text="Bank account number")
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Current account balance")
+    initial_balance = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Starting balance when account was added")
+    is_active = models.BooleanField(default=True, help_text="Whether this account is active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.account_name} - {self.bank_name} ({self.account_number})"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class BankTransaction(models.Model):
+    """Model to track bank deposits and withdrawals"""
+    TRANSACTION_TYPE_CHOICES = [
+        ('deposit', 'Deposit'),
+        ('withdrawal', 'Withdrawal'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    account = models.ForeignKey(BankAccount, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    description = models.TextField(blank=True, help_text="Description of the transaction")
+    reference = models.CharField(max_length=100, blank=True, help_text="Transaction reference number")
+    transaction_date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    balance_after = models.DecimalField(max_digits=15, decimal_places=2, editable=False, help_text="Account balance after this transaction")
+
+    def save(self, *args, **kwargs):
+        """Update account balance when transaction is saved"""
+        if not self.pk:  # New transaction
+            if self.transaction_type == 'deposit':
+                self.account.balance += self.amount
+            else:  # withdrawal
+                if self.amount > self.account.balance:
+                    raise ValueError("Insufficient balance for withdrawal!")
+                self.account.balance -= self.amount
+
+            self.balance_after = self.account.balance
+            self.account.save()
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """Restore account balance when transaction is deleted"""
+        if self.transaction_type == 'deposit':
+            self.account.balance -= self.amount
+        else:  # withdrawal
+            self.account.balance += self.amount
+
+        self.account.save()
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} - {self.amount} RWF on {self.transaction_date}"
+
+    class Meta:
+        ordering = ['-transaction_date', '-created_at']
 
 
 class SoldPig(models.Model):

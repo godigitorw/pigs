@@ -50,7 +50,17 @@ urlpatterns = [
     path('expenses/add/', add_or_update_expense_record, name='add_expense'),
     path('expenses/edit/<uuid:record_id>/', add_or_update_expense_record, name='edit_expense'),
     path('expenses/delete/<uuid:record_id>/', delete_expense, name='delete_expense'),
-    
+
+    # Bank management URLs
+    path('bank/accounts/', bank_accounts_list, name='bank_accounts_list'),
+    path('bank/accounts/add/', add_or_update_bank_account, name='add_bank_account'),
+    path('bank/accounts/<uuid:account_id>/edit/', add_or_update_bank_account, name='edit_bank_account'),
+    path('bank/accounts/<uuid:account_id>/delete/', delete_bank_account, name='delete_bank_account'),
+    path('bank/transactions/', bank_transactions_list, name='bank_transactions_list'),
+    path('bank/transactions/account/<uuid:account_id>/', bank_transactions_list, name='bank_transactions_by_account'),
+    path('bank/transactions/add/', add_bank_transaction, name='add_bank_transaction'),
+    path('bank/transactions/<uuid:transaction_id>/delete/', delete_bank_transaction, name='delete_bank_transaction'),
+
 ]
     
 

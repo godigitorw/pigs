@@ -281,6 +281,47 @@ class ExpenseRecordForm(forms.ModelForm):
         fields = ['date', 'category', 'description', 'amount']
 
 
+class BankAccountForm(forms.ModelForm):
+    class Meta:
+        model = BankAccount
+        fields = ['account_name', 'bank_name', 'account_number', 'initial_balance', 'is_active']
+        widgets = {
+            'account_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Farm Operations Account'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Bank of Kigali'}),
+            'account_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 1234567890'}),
+            'initial_balance': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Set balance to initial_balance for new accounts
+        if not instance.pk:
+            instance.balance = instance.initial_balance
+        if commit:
+            instance.save()
+        return instance
+
+
+class BankTransactionForm(forms.ModelForm):
+    class Meta:
+        model = BankTransaction
+        fields = ['account', 'transaction_type', 'amount', 'description', 'reference', 'transaction_date']
+        widgets = {
+            'account': forms.Select(attrs={'class': 'form-control'}),
+            'transaction_type': forms.Select(attrs={'class': 'form-control'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Description of transaction'}),
+            'reference': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Transaction reference (optional)'}),
+            'transaction_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show active accounts
+        self.fields['account'].queryset = BankAccount.objects.filter(is_active=True)
+
+
 
 def add_or_update_income_record(request, record_id=None):
     record = get_object_or_404(IncomeRecord, id=record_id) if record_id else None

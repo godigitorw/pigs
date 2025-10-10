@@ -957,3 +957,100 @@ def delete_expense(request, record_id):
     expense.delete()
     messages.success(request, 'Expense record deleted successfully.')
     return redirect('expense_list')
+
+
+# ==================== BANK MANAGEMENT VIEWS ====================
+
+def bank_accounts_list(request):
+    """List all bank accounts with their balances"""
+    accounts = BankAccount.objects.all()
+    total_balance = sum(account.balance for account in accounts if account.is_active)
+
+    return render(request, 'farm/bank_accounts.html', {
+        'accounts': accounts,
+        'total_balance': total_balance
+    })
+
+
+def add_or_update_bank_account(request, account_id=None):
+    """Add or update a bank account"""
+    account = get_object_or_404(BankAccount, id=account_id) if account_id else None
+
+    if request.method == 'POST':
+        form = BankAccountForm(request.POST, instance=account)
+        if form.is_valid():
+            form.save()
+            action = 'updated' if account_id else 'added'
+            messages.success(request, f'Bank account {action} successfully.')
+            return redirect('bank_accounts_list')
+        else:
+            messages.error(request, 'There was an error saving the bank account.')
+    else:
+        form = BankAccountForm(instance=account)
+
+    return render(request, 'farm/add_bank_account.html', {
+        'form': form,
+        'account': account,
+        'action': 'Update' if account_id else 'Add'
+    })
+
+
+def delete_bank_account(request, account_id):
+    """Delete a bank account"""
+    account = get_object_or_404(BankAccount, id=account_id)
+
+    # Check if account has transactions
+    if account.transactions.exists():
+        messages.error(request, f'Cannot delete "{account.account_name}" because it has transactions. Please delete transactions first.')
+        return redirect('bank_accounts_list')
+
+    account.delete()
+    messages.success(request, 'Bank account deleted successfully.')
+    return redirect('bank_accounts_list')
+
+
+def bank_transactions_list(request, account_id=None):
+    """List all bank transactions, optionally filtered by account"""
+    if account_id:
+        account = get_object_or_404(BankAccount, id=account_id)
+        transactions = BankTransaction.objects.filter(account=account)
+    else:
+        account = None
+        transactions = BankTransaction.objects.all()
+
+    accounts = BankAccount.objects.filter(is_active=True)
+
+    return render(request, 'farm/bank_transactions.html', {
+        'transactions': transactions,
+        'accounts': accounts,
+        'selected_account': account
+    })
+
+
+def add_bank_transaction(request):
+    """Add a new bank transaction (deposit or withdrawal)"""
+    if request.method == 'POST':
+        form = BankTransactionForm(request.POST)
+        if form.is_valid():
+            try:
+                transaction = form.save()
+                messages.success(request, f'{transaction.get_transaction_type_display()} of {transaction.amount} RWF recorded successfully.')
+                return redirect('bank_transactions_list')
+            except ValueError as e:
+                messages.error(request, str(e))
+                return render(request, 'farm/add_bank_transaction.html', {'form': form})
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = BankTransactionForm()
+
+    return render(request, 'farm/add_bank_transaction.html', {'form': form})
+
+
+@require_POST
+def delete_bank_transaction(request, transaction_id):
+    """Delete a bank transaction and restore balance"""
+    transaction = get_object_or_404(BankTransaction, id=transaction_id)
+    transaction.delete()
+    messages.success(request, f'Transaction deleted successfully. Account balance has been restored.')
+    return redirect('bank_transactions_list')
