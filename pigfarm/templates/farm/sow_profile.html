@@ -86,8 +86,111 @@
   </div>
 
   <!-- CONTENT -->
-  =
   <div class="container-fluid">
+
+    <!-- SUMMARY STATISTICS -->
+    <div class="row mb-4">
+      <div class="col-12 col-lg-6 col-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+                <h6 class="text-uppercase text-muted mb-2">
+                  Total Piglets Born
+                </h6>
+                <span class="h2 mb-0">
+                  {{ total_piglets_born }}
+                </span>
+              </div>
+              <div class="col-auto">
+                <span class="h2 fe fe-users text-muted mb-0"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6 col-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+                <h6 class="text-uppercase text-muted mb-2">
+                  Active Piglets
+                </h6>
+                <span class="h2 mb-0">
+                  {{ active_piglets|length }}
+                </span>
+              </div>
+              <div class="col-auto">
+                <span class="h2 fe fe-activity text-success mb-0"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6 col-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+                <h6 class="text-uppercase text-muted mb-2">
+                  Current Weight
+                </h6>
+                <span class="h2 mb-0">
+                  {% if latest_weight %}
+                    {{ latest_weight.weight }} kg
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </span>
+              </div>
+              <div class="col-auto">
+                <span class="h2 fe fe-trending-up text-primary mb-0"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6 col-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+                <h6 class="text-uppercase text-muted mb-2">
+                  Income from Piglets
+                </h6>
+                <span class="h2 mb-0">
+                  {{ sold_piglets_income|floatformat:0|intcomma }} RWF
+                </span>
+              </div>
+              <div class="col-auto">
+                <span class="h2 fe fe-dollar-sign text-success mb-0"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6 col-xl">
+        <div class="card">
+          <div class="card-body">
+            <div class="row align-items-center gx-0">
+              <div class="col">
+                <h6 class="text-uppercase text-muted mb-2">
+                  Feeding Cost
+                </h6>
+                <span class="h2 mb-0">
+                  {{ total_feeding_cost|floatformat:0|intcomma }} RWF
+                </span>
+              </div>
+              <div class="col-auto">
+                <span class="h2 fe fe-pie-chart text-warning mb-0"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="row">
 
         <div class="col-12 col-xl-4">
@@ -505,8 +608,180 @@
                   </div>
             </div>
         </div>
-      
+
     </div> <!-- / .row -->
+
+    <!-- FEEDING RECORDS -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">
+              <i class="fe fe-list me-2"></i>Recent Feeding Records
+            </h4>
+            <span class="badge bg-secondary-soft">{{ feeding_records|length }} records</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover card-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Feed Type</th>
+                  <th>Quantity (kg)</th>
+                  <th>Cost (RWF)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for record in feeding_records %}
+                <tr>
+                  <td>{{ record.recorded_at|date:"Y-m-d H:i" }}</td>
+                  <td>{{ record.feed.name }}</td>
+                  <td>{{ record.quantity_used }}</td>
+                  <td>{{ record.total_cost|floatformat:0|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center text-muted">No feeding records yet</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREEDING & INSEMINATION RECORDS -->
+    <div class="row mt-4">
+      <div class="col-12 col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">
+              <i class="fe fe-heart me-2"></i>Breeding Records
+            </h4>
+            <span class="badge bg-primary-soft">{{ breeding_records|length }}</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover card-table">
+              <thead>
+                <tr>
+                  <th>Breeding Date</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for record in breeding_records %}
+                <tr>
+                  <td>{{ record.breeding_date|date:"Y-m-d" }}</td>
+                  <td>
+                    {% if record.insemination %}
+                      {{ record.insemination.name }}
+                    {% else %}
+                      Natural
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge bg-{{ record.pregnancy_status|lower }}-soft">
+                      {{ record.get_pregnancy_status_display }}
+                    </span>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted">No breeding records yet</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">
+              <i class="fe fe-droplet me-2"></i>Insemination History
+            </h4>
+            <span class="badge bg-info-soft">{{ inseminations|length }}</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover card-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Technician</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for insem in inseminations %}
+                <tr>
+                  <td>{{ insem.date|date:"Y-m-d" }}</td>
+                  <td>{{ insem.name }}</td>
+                  <td>{{ insem.technician|default:"N/A" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="text-center text-muted">No insemination records yet</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE PIGLETS -->
+    <div class="row mt-4 mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-header-title">
+              <i class="fe fe-users me-2"></i>Active Piglets
+            </h4>
+            <span class="badge bg-success-soft">{{ active_piglets|length }} active</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover card-table">
+              <thead>
+                <tr>
+                  <th>Tag ID</th>
+                  <th>Name</th>
+                  <th>Birth Date</th>
+                  <th>Age (days)</th>
+                  <th>Room</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for piglet in active_piglets %}
+                <tr>
+                  <td><span class="badge bg-success">{{ piglet.animal_tag_id }}</span></td>
+                  <td>{{ piglet.name }}</td>
+                  <td>{{ piglet.birth_date|date:"Y-m-d" }}</td>
+                  <td>{{ piglet.birth_date|timesince }}</td>
+                  <td>{{ piglet.room.name|default:"Not assigned" }}</td>
+                  <td>
+                    <a href="{% url 'piglet_profile' piglet.unique_id %}" class="btn btn-sm btn-primary">
+                      View
+                    </a>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted">No active piglets</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 

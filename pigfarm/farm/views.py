@@ -230,7 +230,31 @@ def sow_profile(request, sow_id):
 
     # Records
     weight_records = WeightRecord.objects.filter(target_type='sow', sow=sow).order_by('-recorded_date')
-    health_records = HealthRecord.objects.filter(sow=sow).order_by('-treatment_date')  # 🩺 Health records
+    health_records = HealthRecord.objects.filter(sow=sow).order_by('-treatment_date')
+
+    # Feeding records
+    feeding_records = FeedingRecord.objects.filter(sow=sow).select_related('feed').order_by('-recorded_at')[:10]
+
+    # Breeding records with insemination info
+    breeding_records = BreedingRecord.objects.filter(sow=sow).select_related('insemination_type').order_by('-breeding_date')
+
+    # Active piglets
+    active_piglets = sow.piglets.filter(status='active').order_by('-birth_date')
+
+    # All piglets (for statistics)
+    all_piglets = sow.piglets.all()
+    total_piglets_born = all_piglets.count()
+
+    # Income from sold piglets
+    sold_piglets_income = SoldPig.objects.filter(sow=sow, pig_type='piglet').aggregate(
+        total=models.Sum('sold_price')
+    )['total'] or 0
+
+    # Latest weight
+    latest_weight = weight_records.first()
+
+    # Feeding cost
+    total_feeding_cost = feeding_records.aggregate(total=models.Sum('total_cost'))['total'] or 0
 
     # Default empty form for weight
     weight_form = WeightRecordForm()
@@ -275,6 +299,13 @@ def sow_profile(request, sow_id):
         'sow': sow,
         'weight_records': weight_records,
         'health_records': health_records,
+        'feeding_records': feeding_records,
+        'breeding_records': breeding_records,
+        'active_piglets': active_piglets,
+        'total_piglets_born': total_piglets_born,
+        'sold_piglets_income': sold_piglets_income,
+        'latest_weight': latest_weight,
+        'total_feeding_cost': total_feeding_cost,
         'weight_form': weight_form,
         'today_date': date.today().strftime('%Y-%m-%d'),
         'current_weight': sow.current_weight,
