@@ -1065,6 +1065,9 @@ def delete_bank_transaction(request, transaction_id):
 
 def tag_search(request):
     """Search for pigs by tag number"""
+    from django.http import HttpResponse
+    import traceback
+
     query = request.GET.get('q', '').strip()
     results = {
         'sows': [],
@@ -1073,86 +1076,104 @@ def tag_search(request):
         'error': None
     }
 
-    if query:
-        try:
+    try:
+        if query:
             # Search for sows with matching tag (handle None values)
-            sows = Sow.objects.filter(
-                animal_tag_id__isnull=False,
-                animal_tag_id__icontains=query
-            ).select_related('room')
+            try:
+                sows = Sow.objects.filter(
+                    animal_tag_id__isnull=False,
+                    animal_tag_id__icontains=query
+                ).select_related('room')
 
-            for sow in sows:
-                try:
-                    # Get latest weight (safely)
-                    latest_weight = None
+                for sow in sows:
                     try:
-                        latest_weight = WeightRecord.objects.filter(
-                            target_type='sow',
-                            sow=sow
-                        ).order_by('-recorded_date').first()
-                    except:
-                        pass
+                        # Get latest weight (safely)
+                        latest_weight = None
+                        try:
+                            from health.models import WeightRecord
+                            latest_weight = WeightRecord.objects.filter(
+                                target_type='sow',
+                                sow=sow
+                            ).order_by('-recorded_date').first()
+                        except Exception:
+                            pass
 
-                    # Get piglet count (safely)
-                    piglet_count = 0
-                    try:
-                        piglet_count = sow.piglets.filter(status='active').count()
-                    except:
-                        pass
+                        # Get piglet count (safely)
+                        piglet_count = 0
+                        try:
+                            piglet_count = sow.piglets.filter(status='active').count()
+                        except Exception:
+                            pass
 
-                    # Get feeding records count (safely)
-                    feeding_count = 0
-                    try:
-                        feeding_count = sow.feeding_records.count()
-                    except:
-                        pass
+                        # Get feeding records count (safely)
+                        feeding_count = 0
+                        try:
+                            feeding_count = sow.feeding_records.count()
+                        except Exception:
+                            pass
 
-                    results['sows'].append({
-                        'sow': sow,
-                        'latest_weight': latest_weight,
-                        'piglet_count': piglet_count,
-                        'feeding_count': feeding_count,
-                    })
-                except Exception as e:
-                    # Skip this sow if there's an error
-                    continue
+                        results['sows'].append({
+                            'sow': sow,
+                            'latest_weight': latest_weight,
+                            'piglet_count': piglet_count,
+                            'feeding_count': feeding_count,
+                        })
+                    except Exception:
+                        # Skip this sow if there's an error
+                        continue
+            except Exception as e:
+                results['error'] = f"Error searching sows: {str(e)}"
 
             # Search for piglets with matching tag (handle None values)
-            piglets = Piglet.objects.filter(
-                animal_tag_id__isnull=False,
-                animal_tag_id__icontains=query
-            ).select_related('sow', 'room')
+            try:
+                piglets = Piglet.objects.filter(
+                    animal_tag_id__isnull=False,
+                    animal_tag_id__icontains=query
+                ).select_related('sow', 'room')
 
-            for piglet in piglets:
-                try:
-                    # Get latest weight (safely)
-                    latest_weight = None
+                for piglet in piglets:
                     try:
-                        latest_weight = WeightRecord.objects.filter(
-                            target_type='piglet',
-                            piglet=piglet
-                        ).order_by('-recorded_date').first()
-                    except:
-                        pass
+                        # Get latest weight (safely)
+                        latest_weight = None
+                        try:
+                            from health.models import WeightRecord
+                            latest_weight = WeightRecord.objects.filter(
+                                target_type='piglet',
+                                piglet=piglet
+                            ).order_by('-recorded_date').first()
+                        except Exception:
+                            pass
 
-                    # Get feeding records count (safely)
-                    feeding_count = 0
-                    try:
-                        feeding_count = piglet.feeding_records.count()
-                    except:
-                        pass
+                        # Get feeding records count (safely)
+                        feeding_count = 0
+                        try:
+                            feeding_count = piglet.feeding_records.count()
+                        except Exception:
+                            pass
 
-                    results['piglets'].append({
-                        'piglet': piglet,
-                        'latest_weight': latest_weight,
-                        'feeding_count': feeding_count,
-                    })
-                except Exception as e:
-                    # Skip this piglet if there's an error
-                    continue
+                        results['piglets'].append({
+                            'piglet': piglet,
+                            'latest_weight': latest_weight,
+                            'feeding_count': feeding_count,
+                        })
+                    except Exception:
+                        # Skip this piglet if there's an error
+                        continue
+            except Exception as e:
+                if results['error']:
+                    results['error'] += f" | Error searching piglets: {str(e)}"
+                else:
+                    results['error'] = f"Error searching piglets: {str(e)}"
 
-        except Exception as e:
-            # Capture any unexpected errors
-            results['error'] = f"Search error: {str(e)}"
+        return render(request, 'farm/tag_search.html', results)
 
-    return render(request, 'farm/tag_search.html', results)
+    except Exception as e:
+        # Last resort error handling - show detailed error
+        error_details = traceback.format_exc()
+        return HttpResponse(
+            f"<h1>Tag Search Error</h1>"
+            f"<p><strong>Error:</strong> {str(e)}</p>"
+            f"<pre>{error_details}</pre>"
+            f"<hr><p><a href='/farm/search/'>Try again</a></p>",
+            status=500
+        )
