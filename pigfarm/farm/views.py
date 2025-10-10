@@ -3,7 +3,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import *
 from .forms import *
-from django.db import IntegrityError
+from django.db import IntegrityError, models
+from django.db.models import Sum
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
@@ -247,14 +248,14 @@ def sow_profile(request, sow_id):
 
     # Income from sold piglets
     sold_piglets_income = SoldPig.objects.filter(piglet__sow=sow, pig_type='piglet').aggregate(
-        total=models.Sum('sold_price')
+        total=Sum('sold_price')
     )['total'] or 0
 
     # Latest weight
     latest_weight = weight_records.first()
 
     # Feeding cost
-    total_feeding_cost = feeding_records.aggregate(total=models.Sum('total_cost'))['total'] or 0
+    total_feeding_cost = feeding_records.aggregate(total=Sum('total_cost'))['total'] or 0
 
     # Default empty form for weight
     weight_form = WeightRecordForm()
