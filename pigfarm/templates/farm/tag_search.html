@@ -107,7 +107,7 @@
                       </td>
                       <td>{{ item.sow.registered_date|date:"Y-m-d" }}</td>
                       <td>
-                        <a href="{% url 'sow_profile' item.sow.id %}" class="btn btn-sm btn-primary">
+                        <a href="{% url 'sow_profile' item.sow.unique_id %}" class="btn btn-sm btn-primary">
                           <i class="fe fe-eye me-1"></i>View
                         </a>
                       </td>
@@ -154,7 +154,7 @@
                       </td>
                       <td>
                         {% if item.piglet.sow %}
-                          <a href="{% url 'sow_profile' item.piglet.sow.id %}">
+                          <a href="{% url 'sow_profile' item.piglet.sow.unique_id %}">
                             {{ item.piglet.sow.name }}
                           </a>
                         {% else %}
@@ -176,7 +176,7 @@
                       </td>
                       <td>{{ item.piglet.birth_date|date:"Y-m-d" }}</td>
                       <td>
-                        <a href="{% url 'piglet_profile' item.piglet.id %}" class="btn btn-sm btn-success">
+                        <a href="{% url 'piglet_profile' item.piglet.unique_id %}" class="btn btn-sm btn-success">
                           <i class="fe fe-eye me-1"></i>View
                         </a>
                       </td>
