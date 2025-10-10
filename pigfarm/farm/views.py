@@ -1061,3 +1061,62 @@ def delete_bank_transaction(request, transaction_id):
     transaction.delete()
     messages.success(request, f'Transaction deleted successfully. Account balance has been restored.')
     return redirect('bank_transactions_list')
+
+
+def tag_search(request):
+    """Search for pigs by tag number"""
+    query = request.GET.get('q', '').strip()
+    results = {
+        'sows': [],
+        'piglets': [],
+        'query': query
+    }
+
+    if query:
+        # Search for sows with matching tag
+        sows = Sow.objects.filter(
+            animal_tag_id__icontains=query
+        ).select_related('room').prefetch_related('piglets', 'feeding_records')
+
+        for sow in sows:
+            # Get latest weight
+            latest_weight = WeightRecord.objects.filter(
+                target_type='sow',
+                sow=sow
+            ).order_by('-recorded_date').first()
+
+            # Get piglet count
+            piglet_count = sow.piglets.filter(status='active').count()
+
+            # Get feeding records count
+            feeding_count = sow.feeding_records.count()
+
+            results['sows'].append({
+                'sow': sow,
+                'latest_weight': latest_weight,
+                'piglet_count': piglet_count,
+                'feeding_count': feeding_count,
+            })
+
+        # Search for piglets with matching tag
+        piglets = Piglet.objects.filter(
+            animal_tag_id__icontains=query
+        ).select_related('sow', 'room').prefetch_related('feeding_records')
+
+        for piglet in piglets:
+            # Get latest weight
+            latest_weight = WeightRecord.objects.filter(
+                target_type='piglet',
+                piglet=piglet
+            ).order_by('-recorded_date').first()
+
+            # Get feeding records count
+            feeding_count = piglet.feeding_records.count()
+
+            results['piglets'].append({
+                'piglet': piglet,
+                'latest_weight': latest_weight,
+                'feeding_count': feeding_count,
+            })
+
+    return render(request, 'farm/tag_search.html', results)

@@ -61,6 +61,9 @@ urlpatterns = [
     path('bank/transactions/add/', add_bank_transaction, name='add_bank_transaction'),
     path('bank/transactions/<uuid:transaction_id>/delete/', delete_bank_transaction, name='delete_bank_transaction'),
 
+    # Tag search
+    path('search/', tag_search, name='tag_search'),
+
 ]
     
 

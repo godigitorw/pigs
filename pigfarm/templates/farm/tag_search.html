@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="fw-bold">Tag Search</h1>
+      <p class="text-muted">Search for pigs by their tag number</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+        <i class="fe fe-home me-2"></i>Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Form -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="get" action="{% url 'tag_search' %}">
+        <div class="row g-3">
+          <div class="col-md-10">
+            <input
+              type="text"
+              name="q"
+              class="form-control form-control-lg"
+              placeholder="Enter tag number (e.g., S001, P123)..."
+              value="{{ query }}"
+              autofocus
+            >
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+              <i class="fe fe-search me-2"></i>Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if query %}
+    <!-- Search Results Summary -->
+    <div class="alert alert-info">
+      <i class="fe fe-info me-2"></i>
+      Search results for "<strong>{{ query }}</strong>":
+      <strong>{{ sows|length }}</strong> sow(s) and <strong>{{ piglets|length }}</strong> piglet(s) found
+    </div>
+
+    {% if sows or piglets %}
+      <!-- Sows Results -->
+      {% if sows %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fe fe-users me-2"></i>Sows ({{ sows|length }})</h4>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tag ID</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Room</th>
+                    <th>Latest Weight</th>
+                    <th>Piglets</th>
+                    <th>Feeding Records</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in sows %}
+                    <tr>
+                      <td class="fw-bold text-primary">{{ item.sow.animal_tag_id }}</td>
+                      <td>{{ item.sow.name }}</td>
+                      <td>
+                        <span class="badge {% if item.sow.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                          {{ item.sow.get_status_display }}
+                        </span>
+                      </td>
+                      <td>{{ item.sow.room.name|default:"Not assigned" }}</td>
+                      <td>
+                        {% if item.latest_weight %}
+                          <strong>{{ item.latest_weight.weight }} kg</strong>
+                          <br>
+                          <small class="text-muted">{{ item.latest_weight.recorded_date|date:"Y-m-d" }}</small>
+                        {% else %}
+                          <span class="text-muted">No records</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <span class="badge bg-info">{{ item.piglet_count }} active</span>
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">{{ item.feeding_count }} records</span>
+                      </td>
+                      <td>{{ item.sow.registered_date|date:"Y-m-d" }}</td>
+                      <td>
+                        <a href="{% url 'sow_profile' item.sow.id %}" class="btn btn-sm btn-primary">
+                          <i class="fe fe-eye me-1"></i>View
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Piglets Results -->
+      {% if piglets %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fe fe-user me-2"></i>Piglets ({{ piglets|length }})</h4>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tag ID</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Sow (Mother)</th>
+                    <th>Room</th>
+                    <th>Latest Weight</th>
+                    <th>Feeding Records</th>
+                    <th>Birth Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in piglets %}
+                    <tr>
+                      <td class="fw-bold text-success">{{ item.piglet.animal_tag_id }}</td>
+                      <td>{{ item.piglet.name }}</td>
+                      <td>
+                        <span class="badge {% if item.piglet.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                          {{ item.piglet.get_status_display }}
+                        </span>
+                      </td>
+                      <td>
+                        {% if item.piglet.sow %}
+                          <a href="{% url 'sow_profile' item.piglet.sow.id %}">
+                            {{ item.piglet.sow.name }}
+                          </a>
+                        {% else %}
+                          <span class="text-muted">Unknown</span>
+                        {% endif %}
+                      </td>
+                      <td>{{ item.piglet.room.name|default:"Not assigned" }}</td>
+                      <td>
+                        {% if item.latest_weight %}
+                          <strong>{{ item.latest_weight.weight }} kg</strong>
+                          <br>
+                          <small class="text-muted">{{ item.latest_weight.recorded_date|date:"Y-m-d" }}</small>
+                        {% else %}
+                          <span class="text-muted">No records</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <span class="badge bg-secondary">{{ item.feeding_count }} records</span>
+                      </td>
+                      <td>{{ item.piglet.birth_date|date:"Y-m-d" }}</td>
+                      <td>
+                        <a href="{% url 'piglet_profile' item.piglet.id %}" class="btn btn-sm btn-success">
+                          <i class="fe fe-eye me-1"></i>View
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% else %}
+      <!-- No Results -->
+      <div class="alert alert-warning">
+        <i class="fe fe-alert-triangle me-2"></i>
+        No pigs found with tag number "<strong>{{ query }}</strong>"
+        <hr>
+        <p class="mb-0">
+          <strong>Tips:</strong>
+          <ul class="mb-0">
+            <li>Check the tag number spelling</li>
+            <li>Try searching with partial tag number (e.g., "S00" instead of "S001")</li>
+            <li>Verify the pig is registered in the system</li>
+          </ul>
+        </p>
+      </div>
+    {% endif %}
+  {% else %}
+    <!-- Initial State -->
+    <div class="text-center py-5">
+      <i class="fe fe-search" style="font-size: 64px; color: #ccc;"></i>
+      <h3 class="text-muted mt-3">Enter a tag number to search</h3>
+      <p class="text-muted">
+        You can search by full or partial tag numbers for quick pig identification
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
