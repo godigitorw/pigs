@@ -117,6 +117,9 @@
                             <a class="list-sort text-body-secondary" data-sort="Cost-Per-Unit" href="#">Cost</a>
                           </th>
                           <th>
+                            <a class="list-sort text-body-secondary" data-sort="Date" href="#">Date Recorded</a>
+                          </th>
+                          <th>
                           </th>
                         </tr>
                       </thead>
@@ -153,11 +156,11 @@
                             <span class="Unit">{{ record.quantity_used }} kg</span>
                           </td>
                           <td>
-                            <span class="Cost-Per-Unit">{{ record.total_cost }} RWFF</span>
+                            <span class="Cost-Per-Unit">{{ record.total_cost }} RWF</span>
                           </td>
-                          
+
                           <td>
-                            <span class="Cost-Per-Unit">{{ record.recorded_at }}</span>
+                            <span class="Date">{{ record.recorded_at|date:"Y-m-d H:i" }}</span>
                           </td>
                           <td class="text-end">
 

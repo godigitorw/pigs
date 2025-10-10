@@ -97,7 +97,14 @@
               <label class="form-label">Quantity Used (kg)</label>
               <input type="number" name="quantity_used" class="form-control" placeholder="Enter quantity used" required>
           </div>
-      
+
+          <!-- Date and Time Input -->
+          <div class="form-group">
+              <label class="form-label">Feeding Date and Time</label>
+              <input type="datetime-local" name="recorded_at" class="form-control" value="{{ form.recorded_at.value|date:'Y-m-d\TH:i' }}" required>
+              <small class="form-text text-muted">You can enter feeding data for past dates to backfill missing records.</small>
+          </div>
+
           <button type="submit" class="btn btn-primary">Add Feeding Record</button>
       </form>
       

@@ -459,13 +459,16 @@ def add_feeding_record(request):
                 messages.error(request, f"Not enough {feed_stock.name} available! (Stock: {feed_stock.stock_quantity} {feed_stock.unit})")
                 return redirect('add_feeding_record')
 
-            
+            # Set the recorded_at from the form (allows backfilling past dates)
+            feeding_record.recorded_at = form.cleaned_data['recorded_at']
 
             # ✅ Calculate total cost correctly
             feeding_record.total_cost = Decimal(feeding_record.quantity_used) * Decimal(feed_stock.cost_per_unit)
             feeding_record.save()
 
-            messages.success(request, f"Feeding record added successfully! Remaining {feed_stock.name} stock: {feed_stock.stock_quantity} {feed_stock.unit}")
+            # Format the date for the success message
+            recorded_date = feeding_record.recorded_at.strftime('%Y-%m-%d %H:%M')
+            messages.success(request, f"Feeding record added successfully for {recorded_date}! Remaining {feed_stock.name} stock: {feed_stock.stock_quantity} {feed_stock.unit}")
             return redirect('feeding_records')
 
     else:

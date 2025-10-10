@@ -156,9 +156,18 @@ class FeedingRecordForm(forms.ModelForm):
         required=True
     )
 
+    recorded_at = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={
+            'type': 'datetime-local',
+            'class': 'form-control'
+        }),
+        required=True,
+        label='Feeding Date and Time'
+    )
+
     class Meta:
         model = FeedingRecord
-        fields = ['feeding_target_type', 'sow', 'piglet', 'feed', 'quantity_used']
+        fields = ['feeding_target_type', 'sow', 'piglet', 'feed', 'quantity_used', 'recorded_at']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -166,17 +175,29 @@ class FeedingRecordForm(forms.ModelForm):
         self.fields['sow'].queryset = Sow.objects.filter(status='active')
         self.fields['piglet'].queryset = Piglet.objects.filter(status='active')
 
+        # Set default value to current date/time if not editing
+        if not self.instance.pk:
+            from django.utils import timezone
+            self.fields['recorded_at'].initial = timezone.now()
+
     def clean(self):
         cleaned_data = super().clean()
         feeding_target_type = cleaned_data.get('feeding_target_type')
         sow = cleaned_data.get('sow')
         piglet = cleaned_data.get('piglet')
+        recorded_at = cleaned_data.get('recorded_at')
 
         if feeding_target_type == 'sow' and not sow:
             self.add_error('sow', 'You must select a sow for this feeding record.')
         elif feeding_target_type == 'piglet' and not piglet:
             self.add_error('piglet', 'You must select a piglet for this feeding record.')
-        
+
+        # Validate that the recorded date is not in the future
+        if recorded_at:
+            from django.utils import timezone
+            if recorded_at > timezone.now():
+                self.add_error('recorded_at', 'Feeding date cannot be in the future.')
+
         return cleaned_data
 
 
