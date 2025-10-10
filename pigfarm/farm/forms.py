@@ -195,7 +195,17 @@ class FeedingRecordForm(forms.ModelForm):
         # Validate that the recorded date is not in the future
         if recorded_at:
             from django.utils import timezone
-            if recorded_at > timezone.now():
+            from datetime import timedelta
+
+            # Make recorded_at timezone-aware if it's naive
+            if timezone.is_naive(recorded_at):
+                recorded_at = timezone.make_aware(recorded_at)
+                cleaned_data['recorded_at'] = recorded_at
+
+            # Allow a small buffer (1 minute) to account for time it takes to submit the form
+            now_with_buffer = timezone.now() + timedelta(minutes=1)
+
+            if recorded_at > now_with_buffer:
                 self.add_error('recorded_at', 'Feeding date cannot be in the future.')
 
         return cleaned_data
