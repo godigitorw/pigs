@@ -555,7 +555,10 @@ class BankTransaction(models.Model):
 
     def save(self, *args, **kwargs):
         """Update account balance when transaction is saved"""
-        if not self.pk:  # New transaction
+        # Check if this is a new transaction (not yet in database)
+        is_new = self.pk is None or not BankTransaction.objects.filter(pk=self.pk).exists()
+
+        if is_new:
             if self.transaction_type == 'deposit':
                 self.account.balance += self.amount
             else:  # withdrawal
