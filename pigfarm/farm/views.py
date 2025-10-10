@@ -246,7 +246,7 @@ def sow_profile(request, sow_id):
     total_piglets_born = all_piglets.count()
 
     # Income from sold piglets
-    sold_piglets_income = SoldPig.objects.filter(sow=sow, pig_type='piglet').aggregate(
+    sold_piglets_income = SoldPig.objects.filter(piglet__sow=sow, pig_type='piglet').aggregate(
         total=models.Sum('sold_price')
     )['total'] or 0
 
