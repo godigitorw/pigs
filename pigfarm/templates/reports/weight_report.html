@@ -20,6 +20,7 @@
     <div class="col-auto">
       <label for="range" class="form-label fw-semibold">Date Range</label>
       <select name="range" id="range" class="form-select">
+        <option value="all" {% if range == 'all' %}selected{% endif %}>All Time</option>
         <option value="week" {% if range == 'week' %}selected{% endif %}>This Week</option>
         <option value="month" {% if range == 'month' %}selected{% endif %}>This Month</option>
         <option value="custom" {% if range == 'custom' %}selected{% endif %}>Custom</option>

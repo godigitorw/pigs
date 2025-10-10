@@ -15,7 +15,7 @@ import pdfkit
 
 
 def finance_report(request):
-    range_type = request.GET.get('range', 'week')
+    range_type = request.GET.get('range', 'all')
     finance_type = request.GET.get('finance_type', 'all')
     today = timezone.now().date()
 
@@ -28,6 +28,9 @@ def finance_report(request):
     elif range_type == 'custom':
         start_date = parse_date(request.GET.get('start_date'))
         end_date = parse_date(request.GET.get('end_date'))
+    elif range_type == 'all':
+        start_date = None
+        end_date = None
     else:
         start_date = None
         end_date = None
@@ -35,58 +38,64 @@ def finance_report(request):
     incomes = []
     expenses = []
 
-    if start_date and end_date:
-        if finance_type in ['all', 'income']:
-            # IncomeRecord
+    if finance_type in ['all', 'income']:
+        # IncomeRecord
+        if start_date and end_date:
             incomes_db = IncomeRecord.objects.filter(date__range=(start_date, end_date))
-            income_data = [
-                {
-                    'date': i.date,
-                    'category': i.get_source_display(),
-                    'amount': i.amount,
-                    'note': i.description,
-                }
-                for i in incomes_db
-            ]
-
-            # SoldPig
             sold_pigs = SoldPig.objects.filter(date_sold__range=(start_date, end_date))
+        else:
+            incomes_db = IncomeRecord.objects.all()
+            sold_pigs = SoldPig.objects.all()
 
-            sold_sows_data = [
-                {
-                    'date': sp.date_sold,
-                    'category': 'Sold Sow',
-                    'amount': sp.sold_price,
-                    'note': f"Sow: {sp.sow.name if sp.sow else 'Unknown'}"
-                }
-                for sp in sold_pigs
-                if sp.pig_type == 'sow'
-            ]
+        income_data = [
+            {
+                'date': i.date,
+                'category': i.get_source_display(),
+                'amount': i.amount,
+                'note': i.description,
+            }
+            for i in incomes_db
+        ]
 
-            sold_piglets_data = [
-                {
-                    'date': sp.date_sold,
-                    'category': 'Sold Piglet',
-                    'amount': sp.sold_price,
-                    'note': f"Piglet: {sp.piglet.name if sp.piglet else 'Unknown'}"
-                }
-                for sp in sold_pigs
-                if sp.pig_type == 'piglet'
-            ]
+        sold_sows_data = [
+            {
+                'date': sp.date_sold,
+                'category': 'Sold Sow',
+                'amount': sp.sold_price,
+                'note': f"Sow: {sp.sow.name if sp.sow else 'Unknown'}"
+            }
+            for sp in sold_pigs
+            if sp.pig_type == 'sow'
+        ]
 
-            incomes = income_data + sold_sows_data + sold_piglets_data
+        sold_piglets_data = [
+            {
+                'date': sp.date_sold,
+                'category': 'Sold Piglet',
+                'amount': sp.sold_price,
+                'note': f"Piglet: {sp.piglet.name if sp.piglet else 'Unknown'}"
+            }
+            for sp in sold_pigs
+            if sp.pig_type == 'piglet'
+        ]
 
-        if finance_type in ['all', 'expense']:
+        incomes = income_data + sold_sows_data + sold_piglets_data
+
+    if finance_type in ['all', 'expense']:
+        if start_date and end_date:
             expenses_db = ExpenseRecord.objects.filter(date__range=(start_date, end_date))
-            expenses = [
-                {
-                    'date': e.date,
-                    'category': e.get_category_display(),
-                    'amount': e.amount,
-                    'note': e.description,
-                }
-                for e in expenses_db
-            ]
+        else:
+            expenses_db = ExpenseRecord.objects.all()
+
+        expenses = [
+            {
+                'date': e.date,
+                'category': e.get_category_display(),
+                'amount': e.amount,
+                'note': e.description,
+            }
+            for e in expenses_db
+        ]
 
     total_income = sum(item['amount'] for item in incomes)
     total_expense = sum(item['amount'] for item in expenses)
@@ -307,7 +316,7 @@ def finance_report_pdf(request):
     
 
 def piglet_births_report(request):
-    range_type = request.GET.get('range', 'week')
+    range_type = request.GET.get('range', 'all')
     today = timezone.now().date()
 
     if range_type == 'week':
@@ -319,16 +328,21 @@ def piglet_births_report(request):
     elif range_type == 'custom':
         start_date = parse_date(request.GET.get('start_date'))
         end_date = parse_date(request.GET.get('end_date'))
+    elif range_type == 'all':
+        start_date = None
+        end_date = None
     else:
         start_date = None
         end_date = None
 
-    piglets = []
+    # Get piglets based on date range
     if start_date and end_date:
         piglets = Piglet.objects.filter(
             birth_date__range=(start_date, end_date),
             status='active'
         ).select_related('sow')
+    else:
+        piglets = Piglet.objects.filter(status='active').select_related('sow')
 
     report_data = []
     for piglet in piglets:
@@ -406,7 +420,7 @@ def piglet_births_report_pdf(request):
 
 
 def sow_report(request):
-    range_type = request.GET.get('range', 'week')
+    range_type = request.GET.get('range', 'all')
     today = timezone.now().date()
 
     # Determine date range
@@ -419,16 +433,21 @@ def sow_report(request):
     elif range_type == 'custom':
         start_date = parse_date(request.GET.get('start_date'))
         end_date = parse_date(request.GET.get('end_date'))
+    elif range_type == 'all':
+        start_date = None
+        end_date = None
     else:
         start_date = None
         end_date = None
 
-    sows = []
+    # Get sows based on date range
     if start_date and end_date:
         sows = Sow.objects.filter(
             registered_date__range=(start_date, end_date),
             status='active'
         ).select_related('room')
+    else:
+        sows = Sow.objects.filter(status='active').select_related('room')
 
     report_data = []
     for sow in sows:
@@ -515,7 +534,7 @@ def sow_report_pdf(request):
 
 
 def weight_report(request):
-    range_type = request.GET.get('range', 'week')
+    range_type = request.GET.get('range', 'all')
     pig_type = request.GET.get('pig_type', 'all')
     today = timezone.now().date()
 
@@ -528,41 +547,47 @@ def weight_report(request):
     elif range_type == 'custom':
         start_date = parse_date(request.GET.get('start_date'))
         end_date = parse_date(request.GET.get('end_date'))
+    elif range_type == 'all':
+        start_date = None
+        end_date = None
     else:
         start_date = None
         end_date = None
 
     records = []
+    # Build query based on date range
     if start_date and end_date:
         query = WeightRecord.objects.filter(
             recorded_date__range=(start_date, end_date)
         ).select_related('sow', 'piglet')
+    else:
+        query = WeightRecord.objects.all().select_related('sow', 'piglet')
 
-        if pig_type in ['sow', 'piglet']:
-            query = query.filter(target_type=pig_type)
+    if pig_type in ['sow', 'piglet']:
+        query = query.filter(target_type=pig_type)
 
-        for record in query:
-            if record.target_type == 'sow' and record.sow:
-                name = record.sow.name
-                tag = record.sow.animal_tag_id
-            elif record.target_type == 'piglet' and record.piglet:
-                name = record.piglet.name
-                tag = record.piglet.animal_tag_id
-            else:
-                name = "-"
-                tag = "-"
+    for record in query:
+        if record.target_type == 'sow' and record.sow:
+            name = record.sow.name
+            tag = record.sow.animal_tag_id
+        elif record.target_type == 'piglet' and record.piglet:
+            name = record.piglet.name
+            tag = record.piglet.animal_tag_id
+        else:
+            name = "-"
+            tag = "-"
 
-            # Example weight status logic
-            if record.weight < 50:
-                status = "Underweight"
-            elif 50 <= record.weight < 250:
-                status = "Ideal"
-            else:
-                status = "Overweight"
+        # Example weight status logic
+        if record.weight < 50:
+            status = "Underweight"
+        elif 50 <= record.weight < 250:
+            status = "Ideal"
+        else:
+            status = "Overweight"
 
-            records.append({
-                'pig_type': record.get_target_type_display(),
-                'name': name,
+        records.append({
+            'pig_type': record.get_target_type_display(),
+            'name': name,
                 'tag': tag,
                 'date': record.recorded_date,
                 'weight': record.weight,
@@ -662,7 +687,7 @@ def weight_report_pdf(request):
     return response
 
 def feeding_cost_report(request):
-    range_type = request.GET.get('range', 'week')
+    range_type = request.GET.get('range', 'all')
     pig_type = request.GET.get('pig_type', 'all')
     today = timezone.now().date()
 
@@ -675,43 +700,49 @@ def feeding_cost_report(request):
     elif range_type == 'custom':
         start_date = parse_date(request.GET.get('start_date'))
         end_date = parse_date(request.GET.get('end_date'))
+    elif range_type == 'all':
+        start_date = None
+        end_date = None
     else:
         start_date = None
         end_date = None
 
     records = []
+    # Build query based on date range
     if start_date and end_date:
         query = FeedingRecord.objects.filter(
             recorded_at__date__range=(start_date, end_date)
         ).select_related('sow', 'piglet', 'feed')
+    else:
+        query = FeedingRecord.objects.all().select_related('sow', 'piglet', 'feed')
 
-        if pig_type == 'sow':
-            query = query.filter(feeding_target_type='sow')
-        elif pig_type == 'piglet':
-            query = query.filter(feeding_target_type='piglet')
+    if pig_type == 'sow':
+        query = query.filter(feeding_target_type='sow')
+    elif pig_type == 'piglet':
+        query = query.filter(feeding_target_type='piglet')
 
-        for record in query:
-            if record.sow:
-                pig_type_val = 'Sow'
-                name = record.sow.name
-                tag = record.sow.animal_tag_id
-            elif record.piglet:
-                pig_type_val = 'Piglet'
-                name = record.piglet.name
-                tag = record.piglet.animal_tag_id
-            else:
-                pig_type_val = '-'
-                name = '-'
-                tag = '-'
+    for record in query:
+        if record.sow:
+            pig_type_val = 'Sow'
+            name = record.sow.name
+            tag = record.sow.animal_tag_id
+        elif record.piglet:
+            pig_type_val = 'Piglet'
+            name = record.piglet.name
+            tag = record.piglet.animal_tag_id
+        else:
+            pig_type_val = '-'
+            name = '-'
+            tag = '-'
 
-            records.append({
-                'pig_type': pig_type_val,
-                'name': name,
-                'tag': tag,
-                'date': record.recorded_at.date(),
-                'feed_name': record.feed.name if record.feed else '-',
-                'quantity': record.quantity_used,
-                'total_cost': record.total_cost,
+        records.append({
+            'pig_type': pig_type_val,
+            'name': name,
+            'tag': tag,
+            'date': record.recorded_at.date(),
+            'feed_name': record.feed.name if record.feed else '-',
+            'quantity': record.quantity_used,
+            'total_cost': record.total_cost,
             })
 
     total_cost = sum(r['total_cost'] for r in records)
