@@ -1069,54 +1069,90 @@ def tag_search(request):
     results = {
         'sows': [],
         'piglets': [],
-        'query': query
+        'query': query,
+        'error': None
     }
 
     if query:
-        # Search for sows with matching tag
-        sows = Sow.objects.filter(
-            animal_tag_id__icontains=query
-        ).select_related('room').prefetch_related('piglets', 'feeding_records')
+        try:
+            # Search for sows with matching tag (handle None values)
+            sows = Sow.objects.filter(
+                animal_tag_id__isnull=False,
+                animal_tag_id__icontains=query
+            ).select_related('room')
 
-        for sow in sows:
-            # Get latest weight
-            latest_weight = WeightRecord.objects.filter(
-                target_type='sow',
-                sow=sow
-            ).order_by('-recorded_date').first()
+            for sow in sows:
+                try:
+                    # Get latest weight (safely)
+                    latest_weight = None
+                    try:
+                        latest_weight = WeightRecord.objects.filter(
+                            target_type='sow',
+                            sow=sow
+                        ).order_by('-recorded_date').first()
+                    except:
+                        pass
 
-            # Get piglet count
-            piglet_count = sow.piglets.filter(status='active').count()
+                    # Get piglet count (safely)
+                    piglet_count = 0
+                    try:
+                        piglet_count = sow.piglets.filter(status='active').count()
+                    except:
+                        pass
 
-            # Get feeding records count
-            feeding_count = sow.feeding_records.count()
+                    # Get feeding records count (safely)
+                    feeding_count = 0
+                    try:
+                        feeding_count = sow.feeding_records.count()
+                    except:
+                        pass
 
-            results['sows'].append({
-                'sow': sow,
-                'latest_weight': latest_weight,
-                'piglet_count': piglet_count,
-                'feeding_count': feeding_count,
-            })
+                    results['sows'].append({
+                        'sow': sow,
+                        'latest_weight': latest_weight,
+                        'piglet_count': piglet_count,
+                        'feeding_count': feeding_count,
+                    })
+                except Exception as e:
+                    # Skip this sow if there's an error
+                    continue
 
-        # Search for piglets with matching tag
-        piglets = Piglet.objects.filter(
-            animal_tag_id__icontains=query
-        ).select_related('sow', 'room').prefetch_related('feeding_records')
+            # Search for piglets with matching tag (handle None values)
+            piglets = Piglet.objects.filter(
+                animal_tag_id__isnull=False,
+                animal_tag_id__icontains=query
+            ).select_related('sow', 'room')
 
-        for piglet in piglets:
-            # Get latest weight
-            latest_weight = WeightRecord.objects.filter(
-                target_type='piglet',
-                piglet=piglet
-            ).order_by('-recorded_date').first()
+            for piglet in piglets:
+                try:
+                    # Get latest weight (safely)
+                    latest_weight = None
+                    try:
+                        latest_weight = WeightRecord.objects.filter(
+                            target_type='piglet',
+                            piglet=piglet
+                        ).order_by('-recorded_date').first()
+                    except:
+                        pass
 
-            # Get feeding records count
-            feeding_count = piglet.feeding_records.count()
+                    # Get feeding records count (safely)
+                    feeding_count = 0
+                    try:
+                        feeding_count = piglet.feeding_records.count()
+                    except:
+                        pass
 
-            results['piglets'].append({
-                'piglet': piglet,
-                'latest_weight': latest_weight,
-                'feeding_count': feeding_count,
-            })
+                    results['piglets'].append({
+                        'piglet': piglet,
+                        'latest_weight': latest_weight,
+                        'feeding_count': feeding_count,
+                    })
+                except Exception as e:
+                    # Skip this piglet if there's an error
+                    continue
+
+        except Exception as e:
+            # Capture any unexpected errors
+            results['error'] = f"Search error: {str(e)}"
 
     return render(request, 'farm/tag_search.html', results)

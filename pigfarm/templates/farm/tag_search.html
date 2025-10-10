@@ -41,6 +41,14 @@
   </div>
 
   {% if query %}
+    <!-- Error Message -->
+    {% if error %}
+      <div class="alert alert-danger">
+        <i class="fe fe-alert-triangle me-2"></i>
+        <strong>Error:</strong> {{ error }}
+      </div>
+    {% endif %}
+
     <!-- Search Results Summary -->
     <div class="alert alert-info">
       <i class="fe fe-info me-2"></i>
