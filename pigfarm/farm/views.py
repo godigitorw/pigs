@@ -434,14 +434,19 @@ def delete_feed_stock(request, pk):
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
-def add_feeding_record(request):
-    """Handles the recording of feed consumption for sows and piglets."""
+def add_feeding_record(request, record_id=None):
+    """Handles the recording of feed consumption for sows and piglets. Also handles editing."""
+    # Get existing record if editing
+    feeding_record = None
+    if record_id:
+        feeding_record = get_object_or_404(FeedingRecord, id=record_id)
+
     sows = Sow.objects.filter(status='active')
     piglets = Piglet.objects.filter(status='active')
     feeds = FeedStock.objects.all()
 
     if request.method == 'POST':
-        form = FeedingRecordForm(request.POST)
+        form = FeedingRecordForm(request.POST, instance=feeding_record)
         if form.is_valid():
             feeding_record = form.save(commit=False)
 
@@ -451,42 +456,43 @@ def add_feeding_record(request):
             else:
                 feeding_record.sow = None  # Only assign piglet
 
-            # Retrieve selected feed stock
-            feed_stock = feeding_record.feed
+            # Set the recorded_at from the form (allows backfilling past dates)
+            feeding_record.recorded_at = form.cleaned_data['recorded_at']
 
-            # Check if enough stock is available
-            if Decimal(feeding_record.quantity_used) > feed_stock.stock_quantity:
-                messages.error(request, f"Not enough {feed_stock.name} available! (Stock: {feed_stock.stock_quantity} {feed_stock.unit})")
+            try:
+                # The model's save method will handle stock adjustments
+                feeding_record.save()
+
+                # Format the date for the success message
+                recorded_date = feeding_record.recorded_at.strftime('%Y-%m-%d %H:%M')
+                action = "updated" if record_id else "added"
+                messages.success(request, f"Feeding record {action} successfully for {recorded_date}!")
+                return redirect('feeding_records')
+            except ValueError as e:
+                # Handle insufficient stock error
+                messages.error(request, str(e))
                 return render(request, 'farm/add_feeding_record.html', {
                     'form': form,
                     'sows': sows,
                     'piglets': piglets,
-                    'feeds': feeds
+                    'feeds': feeds,
+                    'action': 'Update' if record_id else 'Add',
+                    'record': feeding_record
                 })
-
-            # Set the recorded_at from the form (allows backfilling past dates)
-            feeding_record.recorded_at = form.cleaned_data['recorded_at']
-
-            # ✅ Calculate total cost correctly
-            feeding_record.total_cost = Decimal(feeding_record.quantity_used) * Decimal(feed_stock.cost_per_unit)
-            feeding_record.save()
-
-            # Format the date for the success message
-            recorded_date = feeding_record.recorded_at.strftime('%Y-%m-%d %H:%M')
-            messages.success(request, f"Feeding record added successfully for {recorded_date}! Remaining {feed_stock.name} stock: {feed_stock.stock_quantity} {feed_stock.unit}")
-            return redirect('feeding_records')
         else:
             # Form has validation errors - display them
             messages.error(request, "Please correct the errors below.")
 
     else:
-        form = FeedingRecordForm()
+        form = FeedingRecordForm(instance=feeding_record)
 
     return render(request, 'farm/add_feeding_record.html', {
         'form': form,
         'sows': sows,
         'piglets': piglets,
-        'feeds': feeds
+        'feeds': feeds,
+        'action': 'Update' if record_id else 'Add',
+        'record': feeding_record
     })
 
 
@@ -495,10 +501,26 @@ def add_feeding_record(request):
 def feeding_records_list(request):
     """Fetch feeding records and display them in the template"""
     feeding_records = FeedingRecord.objects.all().order_by('-recorded_at')
-    
+
     return render(request, 'farm/feeding_records.html', {
         'feeding_records': feeding_records
     })
+
+
+@require_POST
+def delete_feeding_record(request, record_id):
+    """Delete a feeding record and restore feed stock"""
+    feeding_record = get_object_or_404(FeedingRecord, id=record_id)
+
+    # Store info for success message
+    recorded_date = feeding_record.recorded_at.strftime('%Y-%m-%d %H:%M')
+    feed_name = feeding_record.feed.name
+
+    # Delete the record (this will restore stock via the model's delete method)
+    feeding_record.delete()
+
+    messages.success(request, f"Feeding record from {recorded_date} deleted successfully. {feed_name} stock has been restored.")
+    return redirect('feeding_records')
 
 
 

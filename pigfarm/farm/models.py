@@ -384,19 +384,39 @@ class FeedingRecord(models.Model):
 
     def save(self, *args, **kwargs):
         """Ensure feed stock updates and calculate cost"""
+        # Check if this is an update (record already exists)
+        is_update = self.pk is not None
+
+        if is_update:
+            # Get the old record to restore stock before recalculating
+            old_record = FeedingRecord.objects.get(pk=self.pk)
+            # Restore the previously deducted quantity to feed stock
+            self.feed.stock_quantity += old_record.quantity_used
+            self.feed.save()
+
+        # Check if enough stock is available for the new/updated quantity
         if self.quantity_used > self.feed.stock_quantity:
             raise ValueError("Not enough feed stock available!")
-        
-        # Deduct from feed stock
+
+        # Deduct the new quantity from feed stock
         self.feed.stock_quantity -= self.quantity_used
         self.feed.total_cost = self.feed.stock_quantity * Decimal(self.feed.cost_per_unit)
         self.feed.save()
 
         # Calculate cost
         self.total_cost = self.quantity_used * self.feed.cost_per_unit
-        
+
         super().save(*args, **kwargs)
-    
+
+    def delete(self, *args, **kwargs):
+        """Restore feed stock when deleting a feeding record"""
+        # Restore the quantity back to feed stock
+        self.feed.stock_quantity += self.quantity_used
+        self.feed.total_cost = self.feed.stock_quantity * Decimal(self.feed.cost_per_unit)
+        self.feed.save()
+
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"Feeding {self.feeding_target_type} - {self.feed.name} - {self.quantity_used}kg"
 

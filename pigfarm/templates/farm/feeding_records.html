@@ -170,16 +170,16 @@
                                 <i class="fe fe-more-vertical"></i>
                               </a>
                               <div class="dropdown-menu dropdown-menu-end">
-                                <a href="{% url 'edit_feed_stock' record.feed.id %}" class="dropdown-item">
-                                  Update
+                                <a href="{% url 'edit_feeding_record' record.id %}" class="dropdown-item">
+                                  Edit
                                 </a>
                                 <button class="dropdown-item text-danger"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#deleteFeedModal"
-                                        onclick="openDeleteModal('{{ feed.pk }}', '{{ feed.name }}')">
+                                        data-bs-target="#deleteFeedingRecordModal"
+                                        onclick="openDeleteModal('{{ record.id }}', '{{ record.recorded_at|date:"Y-m-d H:i" }}', '{{ record.feed.name }}')">
                                     Delete
                                 </button>
-                                
+
                               </div>
                             </div>
 
@@ -195,16 +195,17 @@
                     
 
                     <!-- Delete Confirmation Modal -->
-                    <div class="modal fade" id="deleteFeedModal" tabindex="-1" aria-labelledby="deleteFeedModalLabel" aria-hidden="true">
+                    <div class="modal fade" id="deleteFeedingRecordModal" tabindex="-1" aria-labelledby="deleteFeedingRecordModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteFeedModalLabel">Confirm Feed Deletion</h5>
+                                    <h5 class="modal-title" id="deleteFeedingRecordModalLabel">Confirm Feeding Record Deletion</h5>
                                     <button class="btn btn-close p-1" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p id="deleteFeedName"></p>
-                                    <form id="deleteFeedForm" method="post">
+                                    <p id="deleteFeedingRecordInfo"></p>
+                                    <p class="text-muted small">Note: The feed stock quantity will be restored when this record is deleted.</p>
+                                    <form id="deleteFeedingRecordForm" method="post">
                                         {% csrf_token %}
                                         <div class="modal-footer">
                                             <button class="btn btn-danger btn-sm" type="submit">Delete</button>
@@ -289,24 +290,22 @@
 {% block extra_js %}
 <script>
 
-function openDeleteModal(feedId, feedName) {
-        document.getElementById('deleteFeedName').innerText = `Are you sure you want to delete "${feedName}"?`;
-        document.getElementById('deleteFeedForm').action = `/farm/feed-stock/${feedId}/delete/`;
+function openDeleteModal(recordId, recordDate, feedName) {
+    document.getElementById('deleteFeedingRecordInfo').innerText = `Are you sure you want to delete the feeding record from ${recordDate} using ${feedName}?`;
+    document.getElementById('deleteFeedingRecordForm').action = `/farm/feeding-records/${recordId}/delete/`;
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteFeedingRecordModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    let modal = document.getElementById('deleteFeedingRecordModal');
+    if (event.target === modal) {
+        modal.style.display = "none";
     }
-
-    function closeDeleteModal() {
-        document.getElementById('deleteFeedModal').style.display = 'none';
-    }
-
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-        let modal = document.getElementById('deleteFeedModal');
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    }
-
-
+}
 
 </script>
 {% endblock %}

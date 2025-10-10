@@ -31,7 +31,7 @@
 
                 <!-- Title -->
                 <h1 class="header-title">
-                    Add Feed Record
+                    {{ action }} Feed Record
                 </h1>
 
                 {% if messages %}
@@ -121,7 +121,8 @@
               <small class="form-text text-muted">You can enter feeding data for past dates to backfill missing records.</small>
           </div>
 
-          <button type="submit" class="btn btn-primary">Add Feeding Record</button>
+          <button type="submit" class="btn btn-primary">{{ action }} Feeding Record</button>
+          <a href="{% url 'feeding_records' %}" class="btn btn-secondary">Cancel</a>
       </form>
       
 
