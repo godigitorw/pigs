@@ -963,13 +963,20 @@ def delete_expense(request, record_id):
 
 def bank_accounts_list(request):
     """List all bank accounts with their balances"""
-    accounts = BankAccount.objects.all()
-    total_balance = sum(account.balance for account in accounts if account.is_active)
+    try:
+        accounts = BankAccount.objects.all()
+        total_balance = sum(account.balance for account in accounts if account.is_active)
 
-    return render(request, 'farm/bank_accounts.html', {
-        'accounts': accounts,
-        'total_balance': total_balance
-    })
+        return render(request, 'farm/bank_accounts.html', {
+            'accounts': accounts,
+            'total_balance': total_balance
+        })
+    except Exception as e:
+        # Temporary debugging - remove after fixing
+        import traceback
+        error_details = traceback.format_exc()
+        from django.http import HttpResponse
+        return HttpResponse(f"<h1>Error in Bank Accounts View</h1><pre>{error_details}</pre><hr><p>Error: {str(e)}</p>", status=500)
 
 
 def add_or_update_bank_account(request, account_id=None):
