@@ -384,8 +384,8 @@ class FeedingRecord(models.Model):
 
     def save(self, *args, **kwargs):
         """Ensure feed stock updates and calculate cost"""
-        # Check if this is an update (record already exists)
-        is_update = self.pk is not None
+        # Check if this is an update (record already exists in database)
+        is_update = self.pk is not None and FeedingRecord.objects.filter(pk=self.pk).exists()
 
         if is_update:
             # Get the old record to restore stock before recalculating
