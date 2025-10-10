@@ -237,7 +237,7 @@ def sow_profile(request, sow_id):
     feeding_records = FeedingRecord.objects.filter(sow=sow).select_related('feed').order_by('-recorded_at')[:10]
 
     # Breeding records with insemination info
-    breeding_records = BreedingRecord.objects.filter(sow=sow).select_related('insemination_type').order_by('-breeding_date')
+    breeding_records = BreedingRecord.objects.filter(sow=sow).select_related('insemination_type').order_by('-created_at')
 
     # Active piglets
     active_piglets = sow.piglets.filter(status='active').order_by('-birth_date')

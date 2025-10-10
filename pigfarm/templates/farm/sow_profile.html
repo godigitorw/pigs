@@ -673,17 +673,17 @@
               <tbody>
                 {% for record in breeding_records %}
                 <tr>
-                  <td>{{ record.breeding_date|date:"Y-m-d" }}</td>
+                  <td>{{ record.insemination_1_date|date:"Y-m-d"|default:"N/A" }}</td>
                   <td>
-                    {% if record.insemination %}
-                      {{ record.insemination.name }}
+                    {% if record.insemination_type %}
+                      {{ record.insemination_type.name }}
                     {% else %}
                       Natural
                     {% endif %}
                   </td>
                   <td>
-                    <span class="badge bg-{{ record.pregnancy_status|lower }}-soft">
-                      {{ record.get_pregnancy_status_display }}
+                    <span class="badge bg-{{ record.status|lower }}-soft">
+                      {{ record.get_status_display }}
                     </span>
                   </td>
                 </tr>
