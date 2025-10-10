@@ -40,6 +40,22 @@
                     {% endfor %}
                 {% endif %}
 
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Please correct the following errors:</strong>
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
               </div>
             </div> <!-- / .row -->
           </div>
@@ -54,29 +70,29 @@
               <label class="form-label">Select Feeding Target</label>
               <select name="feeding_target_type" class="form-control">
                   <option value="">-- Choose Target --</option>
-                  <option value="sow">Sow</option>
-                  <option value="piglet">Piglet</option>
+                  <option value="sow" {% if form.feeding_target_type.value == 'sow' %}selected{% endif %}>Sow</option>
+                  <option value="piglet" {% if form.feeding_target_type.value == 'piglet' %}selected{% endif %}>Piglet</option>
               </select>
           </div>
       
           <!-- Sow Selection (Initially Hidden) -->
-          <div class="form-group" id="sowSelect" style="display:none;">
+          <div class="form-group" id="sowSelect" style="display:{% if form.feeding_target_type.value == 'sow' %}block{% else %}none{% endif %};">
               <label class="form-label">Select Sow</label>
               <select name="sow" class="form-control">
                   <option value="">-- Select Sow --</option>
                   {% for sow in sows %}
-                      <option value="{{ sow.id }}">{{ sow.name }}</option>
+                      <option value="{{ sow.id }}" {% if form.sow.value == sow.id %}selected{% endif %}>{{ sow.name }}</option>
                   {% endfor %}
               </select>
           </div>
-      
+
           <!-- Piglet Selection (Initially Hidden) -->
-          <div class="form-group" id="pigletSelect" style="display:none;">
+          <div class="form-group" id="pigletSelect" style="display:{% if form.feeding_target_type.value == 'piglet' %}block{% else %}none{% endif %};">
               <label class="form-label">Select Piglet</label>
               <select name="piglet" class="form-control">
                   <option value="">-- Select Piglet --</option>
                   {% for piglet in piglets %}
-                      <option value="{{ piglet.id }}">{{ piglet.name }}</option>
+                      <option value="{{ piglet.id }}" {% if form.piglet.value == piglet.id %}selected{% endif %}>{{ piglet.name }}</option>
                   {% endfor %}
               </select>
           </div>
@@ -87,21 +103,21 @@
               <select name="feed" class="form-control">
                   <option value="">-- Select Feed --</option>
                   {% for feed in feeds %}
-                      <option value="{{ feed.id }}">{{ feed.name }}</option>
+                      <option value="{{ feed.id }}" {% if form.feed.value == feed.id %}selected{% endif %}>{{ feed.name }}</option>
                   {% endfor %}
               </select>
           </div>
-      
+
           <!-- Quantity Input -->
           <div class="form-group">
               <label class="form-label">Quantity Used (kg)</label>
-              <input type="number" name="quantity_used" class="form-control" placeholder="Enter quantity used" required>
+              <input type="number" step="0.01" name="quantity_used" class="form-control" placeholder="Enter quantity used" value="{{ form.quantity_used.value|default:'' }}" required>
           </div>
 
           <!-- Date and Time Input -->
           <div class="form-group">
               <label class="form-label">Feeding Date and Time</label>
-              <input type="datetime-local" name="recorded_at" class="form-control" value="{{ form.recorded_at.value|date:'Y-m-d\TH:i' }}" required>
+              <input type="datetime-local" name="recorded_at" class="form-control" value="{% if form.recorded_at.value %}{{ form.recorded_at.value|date:'Y-m-d\TH:i' }}{% endif %}" required>
               <small class="form-text text-muted">You can enter feeding data for past dates to backfill missing records.</small>
           </div>
 

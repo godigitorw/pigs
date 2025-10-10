@@ -457,7 +457,12 @@ def add_feeding_record(request):
             # Check if enough stock is available
             if Decimal(feeding_record.quantity_used) > feed_stock.stock_quantity:
                 messages.error(request, f"Not enough {feed_stock.name} available! (Stock: {feed_stock.stock_quantity} {feed_stock.unit})")
-                return redirect('add_feeding_record')
+                return render(request, 'farm/add_feeding_record.html', {
+                    'form': form,
+                    'sows': sows,
+                    'piglets': piglets,
+                    'feeds': feeds
+                })
 
             # Set the recorded_at from the form (allows backfilling past dates)
             feeding_record.recorded_at = form.cleaned_data['recorded_at']
@@ -470,6 +475,9 @@ def add_feeding_record(request):
             recorded_date = feeding_record.recorded_at.strftime('%Y-%m-%d %H:%M')
             messages.success(request, f"Feeding record added successfully for {recorded_date}! Remaining {feed_stock.name} stock: {feed_stock.stock_quantity} {feed_stock.unit}")
             return redirect('feeding_records')
+        else:
+            # Form has validation errors - display them
+            messages.error(request, "Please correct the errors below.")
 
     else:
         form = FeedingRecordForm()
