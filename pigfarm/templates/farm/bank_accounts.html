@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bank Accounts{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12">
+
+        <div class="header">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="header-pretitle">BANK</h6>
+                <h1 class="header-title text-truncate">Bank Accounts</h1>
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              <div class="col-auto">
+                <a href="{% url 'add_bank_account' %}" class="btn btn-primary ms-2">Add Bank Account</a>
+                <a href="{% url 'bank_transactions_list' %}" class="btn btn-secondary ms-2">View Transactions</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5 class="card-title mb-0">Total Balance: <strong>{{ total_balance|floatformat:2 }} RWF</strong></h5>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover card-table">
+              <thead>
+                <tr>
+                  <th>Account Name</th>
+                  <th>Bank Name</th>
+                  <th>Account Number</th>
+                  <th>Balance</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for account in accounts %}
+                <tr>
+                  <td><strong>{{ account.account_name }}</strong></td>
+                  <td>{{ account.bank_name }}</td>
+                  <td>{{ account.account_number }}</td>
+                  <td><span class="badge bg-success">{{ account.balance|floatformat:2 }} RWF</span></td>
+                  <td>
+                    {% if account.is_active %}
+                      <span class="badge bg-success">Active</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ account.created_at|date:"Y-m-d" }}</td>
+                  <td class="text-end">
+                    <div class="dropdown">
+                      <a class="dropdown-ellipses dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fe fe-more-vertical"></i>
+                      </a>
+                      <div class="dropdown-menu dropdown-menu-end">
+                        <a href="{% url 'bank_transactions_by_account' account.id %}" class="dropdown-item">View Transactions</a>
+                        <a href="{% url 'edit_bank_account' account.id %}" class="dropdown-item">Edit</a>
+                        <form method="post" action="{% url 'delete_bank_account' account.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                        </form>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">No bank accounts found. Add one to get started!</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bank Transactions{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12">
+
+        <div class="header">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="header-pretitle">BANK</h6>
+                <h1 class="header-title text-truncate">
+                  {% if selected_account %}
+                    Transactions - {{ selected_account.account_name }}
+                  {% else %}
+                    All Bank Transactions
+                  {% endif %}
+                </h1>
+                <br>
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              <div class="col-auto">
+                <a href="{% url 'add_bank_transaction' %}" class="btn btn-primary ms-2">Add Transaction</a>
+                <a href="{% url 'bank_accounts_list' %}" class="btn btn-secondary ms-2">View Accounts</a>
+              </div>
+            </div>
+
+            {% if not selected_account %}
+            <div class="row align-items-center mt-3">
+              <div class="col">
+                <label class="form-label">Filter by Account:</label>
+                <select class="form-select" onchange="if(this.value) window.location.href=this.value;">
+                  <option value="{% url 'bank_transactions_list' %}">All Accounts</option>
+                  {% for account in accounts %}
+                    <option value="{% url 'bank_transactions_by_account' account.id %}">{{ account.account_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover card-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Account</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Balance After</th>
+                  <th>Description</th>
+                  <th>Reference</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                  <td>{{ transaction.transaction_date|date:"Y-m-d" }}</td>
+                  <td>{{ transaction.account.account_name }}</td>
+                  <td>
+                    {% if transaction.transaction_type == 'deposit' %}
+                      <span class="badge bg-success">Deposit</span>
+                    {% else %}
+                      <span class="badge bg-danger">Withdrawal</span>
+                    {% endif %}
+                  </td>
+                  <td><strong>{{ transaction.amount|floatformat:2 }} RWF</strong></td>
+                  <td>{{ transaction.balance_after|floatformat:2 }} RWF</td>
+                  <td>{{ transaction.description|truncatewords:10 }}</td>
+                  <td>{{ transaction.reference|default:"-" }}</td>
+                  <td class="text-end">
+                    <form method="post" action="{% url 'delete_bank_transaction' transaction.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this transaction? Balance will be restored.')">
+                        <i class="fe fe-trash-2"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="8" class="text-center">No transactions found. Add one to get started!</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

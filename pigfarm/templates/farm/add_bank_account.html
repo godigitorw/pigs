@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ action }} Bank Account{% endblock %}
+
+{% block content %}
+{% include 'navigation.html' %}
+
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10 col-xl-8">
+
+        <div class="header mt-md-5">
+          <div class="header-body">
+            <div class="row align-items-center">
+              <div class="col">
+                <h6 class="header-pretitle">BANK</h6>
+                <h1 class="header-title">{{ action }} Bank Account</h1>
+
+                {% if messages %}
+                  {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                  {% endfor %}
+                {% endif %}
+
+                {% if form.errors %}
+                  <div class="alert alert-danger">
+                    <strong>Please correct the following errors:</strong>
+                    <ul>
+                      {% for field in form %}
+                        {% for error in field.errors %}
+                          <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label class="form-label">Account Name *</label>
+            {{ form.account_name }}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bank Name *</label>
+            {{ form.bank_name }}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Account Number *</label>
+            {{ form.account_number }}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Initial Balance (RWF) *</label>
+            {{ form.initial_balance }}
+            <small class="form-text text-muted">Enter the current balance of this account</small>
+          </div>
+
+          <div class="form-check form-group">
+            {{ form.is_active }}
+            <label class="form-check-label">Account is Active</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary">{{ action }} Account</button>
+          <a href="{% url 'bank_accounts_list' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
