@@ -1161,7 +1161,7 @@ def tag_search(request):
                 piglets = Piglet.objects.filter(
                     animal_tag_id__isnull=False,
                     animal_tag_id__icontains=query
-                ).select_related('sow', 'room')
+                ).select_related('sow__room')
 
                 for piglet in piglets:
                     try:
