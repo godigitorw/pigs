@@ -32,15 +32,49 @@ try:
     print("CLEANING UP CORRUPT MIGRATION STATE")
     print("="*60)
 
-    # Delete farm migration history
-    print("\nDeleting farm migrations from history...")
-    cursor.execute("DELETE FROM django_migrations WHERE app = 'farm';")
-    print("✅ Farm migration history cleared")
+    # Drop all farm tables
+    print("\n1. Dropping all farm tables...")
+    cursor.execute("""
+        SELECT tablename FROM pg_tables
+        WHERE tablename LIKE 'farm_%' AND schemaname = 'public';
+    """)
+    farm_tables = cursor.fetchall()
+    if farm_tables:
+        for table in farm_tables:
+            print(f"   Dropping {table[0]}...")
+            cursor.execute(f"DROP TABLE IF EXISTS {table[0]} CASCADE;")
+        print(f"✅ Dropped {len(farm_tables)} farm tables")
+    else:
+        print("   No farm tables to drop")
 
-    # Verify
+    # Drop all health tables
+    print("\n2. Dropping all health tables...")
+    cursor.execute("""
+        SELECT tablename FROM pg_tables
+        WHERE tablename LIKE 'health_%' AND schemaname = 'public';
+    """)
+    health_tables = cursor.fetchall()
+    if health_tables:
+        for table in health_tables:
+            print(f"   Dropping {table[0]}...")
+            cursor.execute(f"DROP TABLE IF EXISTS {table[0]} CASCADE;")
+        print(f"✅ Dropped {len(health_tables)} health tables")
+    else:
+        print("   No health tables to drop")
+
+    # Delete farm migration history
+    print("\n3. Deleting farm migrations from history...")
+    cursor.execute("DELETE FROM django_migrations WHERE app = 'farm';")
     cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'farm';")
     count = cursor.fetchone()[0]
-    print(f"✅ Confirmed: {count} farm migrations remaining (should be 0)")
+    print(f"✅ Farm migration history cleared ({count} remaining)")
+
+    # Delete health migration history
+    print("\n4. Deleting health migrations from history...")
+    cursor.execute("DELETE FROM django_migrations WHERE app = 'health';")
+    cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'health';")
+    count = cursor.fetchone()[0]
+    print(f"✅ Health migration history cleared ({count} remaining)")
 
     cursor.close()
     conn.close()
