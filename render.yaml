@@ -1,0 +1,34 @@
+services:
+  # Web Service
+  - type: web
+    name: pigfarm
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "cd pigfarm && gunicorn pigfarm.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pigfarm-db
+          property: connectionString
+      - key: RENDER
+        value: true
+    autoDeploy: true
+
+  # PostgreSQL Database
+  - type: pgsql
+    name: pigfarm-db
+    plan: free
+    databaseName: pigfarm
+    user: pigfarm
+    region: oregon
+    ipAllowList: []

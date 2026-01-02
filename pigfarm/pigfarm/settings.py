@@ -31,9 +31,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1al_19jmjjxtp6q*bjni&
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# CSRF trusted origins for Railway
+# CSRF trusted origins for Railway and Render
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
+    'https://*.onrender.com',
     'http://localhost',
     'http://127.0.0.1',
 ]
@@ -174,6 +175,10 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# Media files (User uploads - profile pictures, etc.)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Vercel deployment settings
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -207,6 +212,3 @@ if 'RAILWAY_ENVIRONMENT' in os.environ:
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
