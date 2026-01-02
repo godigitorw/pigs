@@ -659,4 +659,96 @@ def sell_piglet(request):
     piglet.save()
 
     messages.success(request, f"Piglet '{piglet.name}' sold successfully.")
-    return redirect('piglets')
+    return redirect('piglets')# farm/models.py - Add this new model at the end of the file
+
+class PigTask(models.Model):
+    """
+    Task/Reminder system for individual pigs (sows and piglets)
+    Allows scheduling tasks like vaccinations, weighing, diet changes, breeding, etc.
+    """
+    TASK_TYPE_CHOICES = [
+        ('vaccination', 'Vaccination'),
+        ('weighing', 'Weighing'),
+        ('diet_change', 'Diet Change'),
+        ('breeding', 'Breeding/Insemination'),
+        ('health_check', 'Health Check'),
+        ('feeding_plan', 'Feeding Plan'),
+        ('breastfeeding', 'Breastfeeding Monitoring'),
+        ('other', 'Other'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('overdue', 'Overdue'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    PIG_TYPE_CHOICES = [
+        ('sow', 'Sow'),
+        ('piglet', 'Piglet'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Target pig
+    pig_type = models.CharField(max_length=10, choices=PIG_TYPE_CHOICES)
+    sow = models.ForeignKey('Sow', on_delete=models.CASCADE, null=True, blank=True, related_name='tasks')
+    piglet = models.ForeignKey('Piglet', on_delete=models.CASCADE, null=True, blank=True, related_name='tasks')
+    
+    # Task details
+    task_type = models.CharField(max_length=30, choices=TASK_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, help_text="Additional notes or instructions")
+    due_date = models.DateField()
+    completed_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Notifications
+    send_email = models.BooleanField(default=True, help_text="Send email reminder")
+    email_sent = models.BooleanField(default=False, editable=False)
+    reminder_days_before = models.PositiveIntegerField(default=2, help_text="Days before due date to send reminder")
+    
+    # Metadata
+    created_by = models.ForeignKey('users.CustomUser', on_delete=models.SET_NULL, null=True, related_name='created_tasks')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['due_date', '-created_at']
+    
+    def __str__(self):
+        pig_name = self.sow.name if self.sow else (self.piglet.name if self.piglet else "Unknown")
+        return f"{self.get_task_type_display()} for {pig_name} - {self.due_date}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-update status to overdue if past due date and still pending
+        from django.utils import timezone
+        if self.status == 'pending' and self.due_date < timezone.now().date():
+            self.status = 'overdue'
+        super().save(*args, **kwargs)
+    
+    @property
+    def pig_name(self):
+        """Get the name of the associated pig"""
+        if self.sow:
+            return self.sow.name
+        elif self.piglet:
+            return self.piglet.name
+        return "Unknown"
+    
+    @property
+    def days_until_due(self):
+        """Calculate days until due date"""
+        from django.utils import timezone
+        from datetime import timedelta
+        today = timezone.now().date()
+        delta = self.due_date - today
+        return delta.days
+    
+    @property
+    def should_send_reminder(self):
+        """Check if reminder should be sent"""
+        if self.email_sent or not self.send_email or self.status != 'pending':
+            return False
+        return self.days_until_due <= self.reminder_days_before
