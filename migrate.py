@@ -26,18 +26,31 @@ def run_migrations():
 
         # Handle case where migration tries to alter a table that doesn't exist
         if 'does not exist' in error_msg and 'farm_breedingrecord' in error_msg:
-            print("⚠️ Table doesn't exist yet. Faking initial migration...")
+            print("⚠️ Table doesn't exist yet. Skipping problematic migrations...")
             try:
-                # Fake the problematic migrations
-                print("Faking farm migrations 0001, 0002, 0003...")
-                call_command('migrate', 'farm', '0002', '--fake', verbosity=2)
-                call_command('migrate', 'farm', '0003', '--fake', verbosity=2)
-                print("Running remaining migrations...")
-                call_command('migrate', verbosity=2, interactive=False)
+                # Run all non-farm migrations first
+                print("Running migrations for other apps...")
+                call_command('migrate', 'contenttypes', verbosity=2, interactive=False)
+                call_command('migrate', 'auth', verbosity=2, interactive=False)
+                call_command('migrate', 'users', verbosity=2, interactive=False)
+                call_command('migrate', 'admin', verbosity=2, interactive=False)
+                call_command('migrate', 'sessions', verbosity=2, interactive=False)
+                call_command('migrate', 'health', verbosity=2, interactive=False)
+
+                # For farm app, fake up to the problematic migration, then run the rest
+                print("Faking farm app migrations up to 0005...")
+                call_command('migrate', 'farm', '0005', '--fake', verbosity=2, interactive=False)
+
+                # Now run remaining farm migrations normally
+                print("Running remaining farm migrations...")
+                call_command('migrate', 'farm', verbosity=2, interactive=False)
+
                 print("✅ Migrations completed after fix!")
                 return True
             except Exception as fix_error:
                 print(f"❌ Migration fix failed: {fix_error}")
+                import traceback
+                traceback.print_exc()
                 return False
         elif 'cannot cast type bigint to uuid' in error_msg:
             print("⚠️ UUID conversion error detected. Attempting to fix...")
