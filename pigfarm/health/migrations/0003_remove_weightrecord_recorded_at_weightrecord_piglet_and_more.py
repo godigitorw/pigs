@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('farm', '0010_alter_feedstock_cost_per_unit_alter_feedstock_name_and_more'),
-        ('health', '0002_alter_vaccinationrecord_id_and_more'),
+        ('health', '0001_initial'),
     ]
 
     operations = [

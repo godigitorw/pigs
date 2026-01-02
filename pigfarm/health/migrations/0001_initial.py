@@ -43,12 +43,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VaccinationRecord',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('vaccination_target_type', models.CharField(choices=[('sow', 'Sow'), ('piglet', 'Piglet')], default='sow', max_length=10)),
                 ('vaccination_date', models.DateField()),
                 ('next_vaccination_date', models.DateField(blank=True, null=True)),
                 ('cost', models.DecimalField(decimal_places=2, default=0.0, max_digits=10)),
-                ('status', models.CharField(choices=[('vaccinated', 'Vaccinated'), ('overdue', 'Overdue'), ('pending', 'Pending')], default='pending', max_length=15)),
+                ('status', models.CharField(choices=[('vaccinated', 'Vaccinated'), ('overdue', 'Overdue'), ('done', 'Done')], default='vaccinated', max_length=15)),
                 ('piglet', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='farm.piglet')),
                 ('sow', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='farm.sow')),
                 ('vaccine', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='health.vaccination')),
