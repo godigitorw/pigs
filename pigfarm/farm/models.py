@@ -234,6 +234,17 @@ class Piglet(models.Model):
     help_text="E.g., RW-PIG-001"
 )
 
+    gender = models.CharField(
+        max_length=10,
+        choices=[
+            ('male', 'Male'),
+            ('female', 'Female'),
+        ],
+        null=True,
+        blank=True,
+        help_text="Gender of the piglet"
+    )
+
     # 🔽 Add this line
     insemination_type = models.ForeignKey(
         Insemination,

@@ -92,6 +92,15 @@ class PigletForm(forms.ModelForm):
         label="Initial Weight (kg)"
     )
     
+    gender = forms.ChoiceField(
+        choices=[('', 'Select Gender'), ('male', 'Male'), ('female', 'Female')],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+        }),
+        label="Gender"
+    )
+    
     # 🔽 NEW FIELD
     insemination_type = forms.ModelChoiceField(
         queryset=Insemination.objects.all(),
@@ -104,7 +113,7 @@ class PigletForm(forms.ModelForm):
 
     class Meta:
         model = Piglet
-        fields = ['sow', 'birth_date', 'initial_weight', 'insemination_type','animal_tag_id']
+        fields = ['sow', 'birth_date', 'initial_weight', 'gender', 'insemination_type', 'animal_tag_id']
 
     def save(self, commit=True):
         """Set current_weight from initial_weight before saving."""
