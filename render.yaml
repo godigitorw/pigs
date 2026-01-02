@@ -17,18 +17,7 @@ services:
       - key: ALLOWED_HOSTS
         sync: false
       - key: DATABASE_URL
-        fromDatabase:
-          name: pigfarm-db
-          property: connectionString
+        sync: false
       - key: RENDER
         value: true
     autoDeploy: true
-
-  # PostgreSQL Database
-  - type: postgres
-    name: pigfarm-db
-    plan: free
-    databaseName: pigfarm
-    user: pigfarm
-    region: oregon
-    ipAllowList: []
