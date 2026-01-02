@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pig Tasks - Task Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-body">
+          <div class="row align-items-center">
+            <div class="col">
+              <h1 class="header-title">
+                <i class="fe fe-check-circle me-2"></i> Task Management
+              </h1>
+              <p class="header-subtitle">Schedule and track tasks for your pigs</p>
+            </div>
+            <div class="col-auto">
+              <a href="{% url 'task_create' %}" class="btn btn-primary">
+                <i class="fe fe-plus"></i> Add New Task
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert Cards -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card bg-warning-soft">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="fe fe-alert-triangle"></i> Overdue Tasks
+              </h5>
+              <h2>{{ overdue_count }}</h2>
+              <small>Tasks past due date</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card bg-success-soft">
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="fe fe-clock"></i> Upcoming This Week
+              </h5>
+              <h2>{{ upcoming_tasks|length }}</h2>
+              <small>Tasks due in next 7 days</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card">
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Status</label>
+              <select class="form-control" name="status">
+                <option value="">All</option>
+                {% for value, label in task_statuses %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Pig Type</label>
+              <select class="form-control" name="pig_type">
+                <option value="">All</option>
+                {% for value, label in pig_types %}
+                <option value="{{ value }}" {% if pig_type_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Task Type</label>
+              <select class="form-control" name="task_type">
+                <option value="">All</option>
+                {% for value, label in task_types %}
+                <option value="{{ value }}" {% if task_type_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Task List -->
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-header-title">All Tasks</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Pig</th>
+                  <th>Type</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for task in page_obj %}
+                <tr>
+                  <td>
+                    <strong>{{ task.title }}</strong>
+                    <br><small class="text-muted">{{ task.description|truncatewords:10 }}</small>
+                  </td>
+                  <td>
+                    {{ task.pig_name }}
+                    <br><small class="text-muted">{{ task.get_pig_type_display }}</small>
+                  </td>
+                  <td><span class="badge bg-info">{{ task.get_task_type_display }}</span></td>
+                  <td>
+                    {{ task.due_date }}
+                    <br>
+                    {% if task.days_until_due < 0 %}
+                    <small class="text-danger">{{ task.days_until_due|add:"0" }} days overdue</small>
+                    {% elif task.days_until_due == 0 %}
+                    <small class="text-warning">Due today</small>
+                    {% else %}
+                    <small class="text-muted">In {{ task.days_until_due }} days</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if task.status == 'completed' %}
+                    <span class="badge bg-success">Completed</span>
+                    {% elif task.status == 'overdue' %}
+                    <span class="badge bg-danger">Overdue</span>
+                    {% elif task.status == 'pending' %}
+                    <span class="badge bg-warning">Pending</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ 'task.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if task.status == 'pending' or task.status == 'overdue' %}
+                    <a href="{% url 'task_complete' task.id %}" class="btn btn-sm btn-success" title="Mark Complete">
+                      <i class="fe fe-check"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'task_edit' task.id %}" class="btn btn-sm btn-primary" title="Edit">
+                      <i class="fe fe-edit"></i>
+                    </a>
+                    <a href="{% url 'task_delete' task.id %}" class="btn btn-sm btn-danger" title="Delete">
+                      <i class="fe fe-trash-2"></i>
+                    </a>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted">No tasks found</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          {% if page_obj.has_other_pages %}
+          <nav>
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+              </li>
+              {% endif %}
+              <li class="page-item active">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+              </li>
+              {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

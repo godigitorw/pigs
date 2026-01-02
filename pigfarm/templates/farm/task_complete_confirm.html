@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Complete Task{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6 offset-md-3">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h4 class="card-header-title mb-0">
+            <i class="fe fe-check-circle"></i> Complete Task
+          </h4>
+        </div>
+        <div class="card-body">
+          <h5>{{ task.title }}</h5>
+          <p class="text-muted">{{ task.description }}</p>
+          
+          <table class="table table-sm">
+            <tr>
+              <th>Pig:</th>
+              <td>{{ task.pig_name }} ({{ task.get_pig_type_display }})</td>
+            </tr>
+            <tr>
+              <th>Task Type:</th>
+              <td>{{ task.get_task_type_display }}</td>
+            </tr>
+            <tr>
+              <th>Due Date:</th>
+              <td>{{ task.due_date }}</td>
+            </tr>
+          </table>
+
+          <div class="alert alert-info">
+            <i class="fe fe-info"></i> Mark this task as completed?
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col">
+                <a href="{% url 'task_list' %}" class="btn btn-secondary">
+                  <i class="fe fe-arrow-left"></i> Cancel
+                </a>
+              </div>
+              <div class="col text-end">
+                <button type="submit" class="btn btn-success">
+                  <i class="fe fe-check"></i> Mark Complete
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@
 from django.urls import path
 from . import views 
 from .views import *
+from . import task_views
 
 urlpatterns = [
     path('rooms/', views.room_list, name='room_list'),
@@ -63,6 +64,14 @@ urlpatterns = [
 
     # Tag search
     path('search/', tag_search, name='tag_search'),
+    
+    # Task management
+    path('tasks/', task_views.task_list, name='task_list'),
+    path('tasks/add/', task_views.task_create, name='task_create'),
+    path('tasks/\u003cuuid:pk\u003e/edit/', task_views.task_edit, name='task_edit'),
+    path('tasks/\u003cuuid:pk\u003e/complete/', task_views.task_complete, name='task_complete'),
+    path('tasks/\u003cuuid:pk\u003e/delete/', task_views.task_delete, name='task_delete'),
+    path('\u003cstr:pig_type\u003e/\u003cuuid:pig_id\u003e/tasks/', task_views.pig_tasks, name='pig_tasks'),
 
 ]
     

@@ -350,4 +350,90 @@ def add_or_update_income_record(request, record_id=None):
         'form': form,
         'record': record,
     }
-    return render(request, 'income/add_income.html', context)
+    return render(request, 'income/add_income.html', context)# farm/forms.py - Add this at the end
+
+class PigTaskForm(forms.ModelForm):
+    """Form for creating and editing pig tasks"""
+    
+    pig_type = forms.ChoiceField(
+        choices=[('', 'Select Type'), ('sow', 'Sow'), ('piglet', 'Piglet')],
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
+    )
+    
+    sow = forms.ModelChoiceField(
+        queryset=Sow.objects.filter(status='active'),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False,
+        empty_label="Select Sow"
+    )
+    
+    piglet = forms.ModelChoiceField(
+        queryset=Piglet.objects.filter(status='active'),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False,
+        empty_label="Select Piglet"
+    )
+    
+    task_type = forms.ChoiceField(
+        choices=PigTask.TASK_TYPE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
+    )
+    
+    title = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Second Vaccination Due'}),
+        max_length=200
+    )
+    
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Additional notes...'}),
+        required=False
+    )
+    
+    due_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        required=True
+    )
+    
+    reminder_days_before = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 30}),
+        initial=2,
+        help_text="Days before due date to send email reminder"
+    )
+    
+    send_email = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        required=False,
+        initial=True,
+        label="Send email reminder"
+    )
+    
+    class Meta:
+        model = PigTask
+        fields = ['pig_type', 'sow', 'piglet', 'task_type', 'title', 'description', 
+                  'due_date', 'reminder_days_before', 'send_email']
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        pig_type = cleaned_data.get('pig_type')
+        sow = cleaned_data.get('sow')
+        piglet = cleaned_data.get('piglet')
+        
+        if pig_type == 'sow' and not sow:
+            self.add_error('sow', 'Please select a sow for this task')
+        elif pig_type == 'piglet' and not piglet:
+            self.add_error('piglet', 'Please select a piglet for this task')
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Set created_by if available
+        if hasattr(self, 'user'):
+            instance.created_by = self.user
+        
+        if commit:
+            instance.save()
+        return instance

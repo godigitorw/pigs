@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{% if task %}Edit Task{% else %}Add Task{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-header-title">
+            {% if task %}
+            <i class="fe fe-edit"></i> Edit Task
+            {% else %}
+            <i class="fe fe-plus"></i> Add New Task
+            {% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+              <ul class="mb-0">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Pig Type *</label>
+                {{ form.pig_type }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Task Type *</label>
+                {{ form.task_type }}
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Sow</label>
+                {{ form.sow }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Piglet</label>
+                {{ form.piglet }}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Task Title *</label>
+              {{ form.title }}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Due Date *</label>
+                {{ form.due_date }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Reminder (days before)</label>
+                {{ form.reminder_days_before }}
+                <small class="form-text text-muted">{{ form.reminder_days_before.help_text }}</small>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="form-check">
+                {{ form.send_email }}
+                <label class="form-check-label" for="{{ form.send_email.id_for_label }}">
+                  {{ form.send_email.label }}
+                </label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <a href="{% url 'task_list' %}" class="btn btn-secondary">
+                  <i class="fe fe-arrow-left"></i> Cancel
+                </a>
+              </div>
+              <div class="col text-end">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fe fe-save"></i> Save Task
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Show/hide sow/piglet based on pig_type selection
+document.addEventListener('DOMContentLoaded', function() {
+  const pigTypeSelect = document.querySelector('select[name="pig_type"]');
+  const sowSelect = document.querySelector('select[name="sow"]').closest('.mb-3');
+  const pigletSelect = document.querySelector('select[name="piglet"]').closest('.mb-3');
+  
+  function togglePigSelects() {
+    const pigType = pigTypeSelect.value;
+    if (pigType === 'sow') {
+      sowSelect.style.display = 'block';
+      pigletSelect.style.display = 'none';
+    } else if (pigType === 'piglet') {
+      sowSelect.style.display = 'none';
+      pigletSelect.style.display = 'block';
+    } else {
+      sowSelect.style.display = 'none';
+      pigletSelect.style.display = 'none';
+    }
+  }
+  
+  pigTypeSelect.addEventListener('change', togglePigSelects);
+  togglePigSelects(); // Initial run
+});
+</script>
+{% endblock %}
