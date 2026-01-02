@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('farm', '0006_alter_breedingrecord_id'),
+        ('farm', '0005_breedingrecord_actual_farrow_date_and_more'),
     ]
 
     operations = [
