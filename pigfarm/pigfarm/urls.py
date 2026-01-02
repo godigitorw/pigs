@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from .views import *
+from .setup_views import create_admin
 from django.shortcuts import redirect
 from django.contrib.auth.views import LogoutView
 from django.conf import settings
@@ -16,6 +17,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('login/', login_view, name='login'),
     path('logout/', custom_logout, name='logout'),
+    path('setup-admin/', create_admin, name='setup_admin'),
 ]
 
 # Serve media files in development
