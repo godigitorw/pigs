@@ -26,7 +26,8 @@ def run_migrations():
 
         # Handle case where migration tries to alter a table that doesn't exist
         if 'does not exist' in error_msg and 'farm_breedingrecord' in error_msg:
-            print("⚠️ Table doesn't exist yet. Skipping problematic migrations...")
+            print("⚠️ Table doesn't exist yet. This shouldn't happen on a fresh database.")
+            print("⚠️ Attempting complete reset of farm migrations...")
             try:
                 # Run all non-farm migrations first
                 print("Running migrations for other apps...")
@@ -37,9 +38,13 @@ def run_migrations():
                 call_command('migrate', 'sessions', verbosity=2, interactive=False)
                 call_command('migrate', 'health', verbosity=2, interactive=False)
 
-                # For farm app, fake up to the problematic migration, then run the rest
-                print("Faking farm app migrations up to 0005...")
-                call_command('migrate', 'farm', '0005', '--fake', verbosity=2, interactive=False)
+                # For farm app: Run 0001 to create tables, then fake UUID conversions
+                print("Creating tables with farm 0001 migration...")
+                call_command('migrate', 'farm', '0001', verbosity=2, interactive=False)
+
+                print("Faking UUID conversion migrations (0003, 0006)...")
+                call_command('migrate', 'farm', '0003', '--fake', verbosity=2, interactive=False)
+                call_command('migrate', 'farm', '0006', '--fake', verbosity=2, interactive=False)
 
                 # Now run remaining farm migrations normally
                 print("Running remaining farm migrations...")
