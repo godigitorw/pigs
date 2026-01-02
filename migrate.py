@@ -29,6 +29,23 @@ def run_migrations():
             print("⚠️ Migration error detected. Attempting strategic migration approach...")
             print(f"⚠️ Error: {error_msg}")
             try:
+                # Drop all farm tables to start fresh
+                print("\n=== Dropping all farm tables to start fresh ===")
+                with connection.cursor() as cursor:
+                    # Get all farm tables
+                    cursor.execute("""
+                        SELECT tablename FROM pg_tables
+                        WHERE tablename LIKE 'farm_%' AND schemaname = 'public';
+                    """)
+                    tables = cursor.fetchall()
+
+                    for table in tables:
+                        table_name = table[0]
+                        print(f"Dropping table: {table_name}")
+                        cursor.execute(f"DROP TABLE IF EXISTS {table_name} CASCADE;")
+
+                print("✅ All farm tables dropped")
+
                 # Run all non-farm migrations first
                 print("\n=== Running migrations for other apps ===")
                 call_command('migrate', 'contenttypes', verbosity=2, interactive=False)
@@ -38,12 +55,12 @@ def run_migrations():
                 call_command('migrate', 'sessions', verbosity=2, interactive=False)
                 call_command('migrate', 'health', verbosity=2, interactive=False)
 
-                # For farm app: Fake all migrations and let Django create schema from models
-                print("\n=== Faking all farm migrations to avoid conversion issues ===")
+                # For farm app: Fake all migrations
+                print("\n=== Faking all farm migrations ===")
                 call_command('migrate', 'farm', '--fake', verbosity=2, interactive=False)
 
-                # Now use migrate --run-syncdb to create any missing tables from current models
-                print("\n=== Creating missing tables from current models ===")
+                # Now use migrate --run-syncdb to create tables from current models
+                print("\n=== Creating tables from current models ===")
                 call_command('migrate', '--run-syncdb', verbosity=2, interactive=False)
 
                 print("✅ Migrations completed after fix!")
