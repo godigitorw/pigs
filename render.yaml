@@ -5,7 +5,7 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && cd pigfarm && python manage.py collectstatic --no-input && cd .. && python migrate.py"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && cd pigfarm && python manage.py collectstatic --no-input && python manage.py migrate --no-input || (echo 'Migration failed, trying to fix...' && python ../migrate.py)"
     startCommand: "cd pigfarm && gunicorn pigfarm.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
