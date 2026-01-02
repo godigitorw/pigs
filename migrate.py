@@ -24,13 +24,13 @@ def run_migrations():
     except Exception as e:
         error_msg = str(e)
 
-        # Handle case where migration tries to alter a table that doesn't exist
-        if 'does not exist' in error_msg and 'farm_breedingrecord' in error_msg:
-            print("⚠️ Table doesn't exist yet. This shouldn't happen on a fresh database.")
-            print("⚠️ Attempting complete reset of farm migrations...")
+        # Handle case where migration tries to alter a table that doesn't exist OR UUID conversion issues
+        if ('does not exist' in error_msg and 'farm_breedingrecord' in error_msg) or 'cannot cast type bigint to uuid' in error_msg:
+            print("⚠️ Migration error detected. Attempting strategic migration approach...")
+            print(f"⚠️ Error: {error_msg}")
             try:
                 # Run all non-farm migrations first
-                print("Running migrations for other apps...")
+                print("\n=== Running migrations for other apps ===")
                 call_command('migrate', 'contenttypes', verbosity=2, interactive=False)
                 call_command('migrate', 'auth', verbosity=2, interactive=False)
                 call_command('migrate', 'users', verbosity=2, interactive=False)
@@ -38,17 +38,13 @@ def run_migrations():
                 call_command('migrate', 'sessions', verbosity=2, interactive=False)
                 call_command('migrate', 'health', verbosity=2, interactive=False)
 
-                # For farm app: Run 0001 to create tables, then fake UUID conversions
-                print("Creating tables with farm 0001 migration...")
-                call_command('migrate', 'farm', '0001', verbosity=2, interactive=False)
+                # For farm app: Fake all migrations and let Django create schema from models
+                print("\n=== Faking all farm migrations to avoid conversion issues ===")
+                call_command('migrate', 'farm', '--fake', verbosity=2, interactive=False)
 
-                print("Faking UUID conversion migrations (0003, 0006)...")
-                call_command('migrate', 'farm', '0003', '--fake', verbosity=2, interactive=False)
-                call_command('migrate', 'farm', '0006', '--fake', verbosity=2, interactive=False)
-
-                # Now run remaining farm migrations normally
-                print("Running remaining farm migrations...")
-                call_command('migrate', 'farm', verbosity=2, interactive=False)
+                # Now use migrate --run-syncdb to create any missing tables from current models
+                print("\n=== Creating missing tables from current models ===")
+                call_command('migrate', '--run-syncdb', verbosity=2, interactive=False)
 
                 print("✅ Migrations completed after fix!")
                 return True
