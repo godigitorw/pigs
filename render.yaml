@@ -5,7 +5,7 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && cd pigfarm && python manage.py collectstatic --no-input && python manage.py migrate --no-input && cd .. && python create_default_admin.py"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && cd pigfarm && python manage.py collectstatic --no-input && python manage.py migrate --no-input && cd .. && python create_default_admin.py || echo 'Admin creation skipped'"
     startCommand: "cd pigfarm && gunicorn pigfarm.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
