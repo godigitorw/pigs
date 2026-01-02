@@ -139,7 +139,7 @@
                     {% elif task.status == 'pending' %}
                     <span class="badge bg-warning">Pending</span>
                     {% else %}
-                    <span class="badge bg-secondary">{{ 'task.get_status_display }}</span>
+                    <span class="badge bg-secondary">{{ task.get_status_display }}</span>
                     {% endif %}
                   </td>
                   <td>
