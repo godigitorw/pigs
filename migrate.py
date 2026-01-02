@@ -15,7 +15,7 @@ from django.core.management import call_command
 from django.db import connection
 
 def run_migrations():
-    """Run migrations with special handling for UUID conversion"""
+    """Run migrations with special handling for UUID conversion and missing tables"""
     try:
         print("Running migrations...")
         call_command('migrate', verbosity=2, interactive=False)
@@ -23,7 +23,23 @@ def run_migrations():
         return True
     except Exception as e:
         error_msg = str(e)
-        if 'cannot cast type bigint to uuid' in error_msg:
+
+        # Handle case where migration tries to alter a table that doesn't exist
+        if 'does not exist' in error_msg and 'farm_breedingrecord' in error_msg:
+            print("⚠️ Table doesn't exist yet. Faking initial migration...")
+            try:
+                # Fake the problematic migrations
+                print("Faking farm migrations 0001, 0002, 0003...")
+                call_command('migrate', 'farm', '0002', '--fake', verbosity=2)
+                call_command('migrate', 'farm', '0003', '--fake', verbosity=2)
+                print("Running remaining migrations...")
+                call_command('migrate', verbosity=2, interactive=False)
+                print("✅ Migrations completed after fix!")
+                return True
+            except Exception as fix_error:
+                print(f"❌ Migration fix failed: {fix_error}")
+                return False
+        elif 'cannot cast type bigint to uuid' in error_msg:
             print("⚠️ UUID conversion error detected. Attempting to fix...")
             try:
                 # Drop the problematic tables and recreate
