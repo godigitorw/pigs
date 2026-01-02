@@ -16,8 +16,51 @@ from django.db import connection
 
 def run_migrations():
     """Run migrations with special handling for UUID conversion and missing tables"""
+
+    # First, check if we have corrupt migration state
+    print("Checking database migration state...")
     try:
-        print("Running migrations...")
+        with connection.cursor() as cursor:
+            # Check if django_migrations table exists
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables
+                    WHERE table_schema = 'public'
+                    AND table_name = 'django_migrations'
+                );
+            """)
+            migrations_table_exists = cursor.fetchone()[0]
+
+            if migrations_table_exists:
+                # Check for farm migrations in history
+                cursor.execute("""
+                    SELECT COUNT(*) FROM django_migrations
+                    WHERE app = 'farm';
+                """)
+                farm_migration_count = cursor.fetchone()[0]
+
+                # Check if farm tables actually exist
+                cursor.execute("""
+                    SELECT COUNT(*) FROM pg_tables
+                    WHERE tablename LIKE 'farm_%' AND schemaname = 'public';
+                """)
+                farm_table_count = cursor.fetchone()[0]
+
+                print(f"Found {farm_migration_count} farm migrations in history")
+                print(f"Found {farm_table_count} farm tables in database")
+
+                # If we have migration history but no tables, we have corrupt state
+                if farm_migration_count > 0 and farm_table_count == 0:
+                    print("⚠️ Corrupt migration state detected: migrations recorded but tables missing")
+                    print("Clearing farm migration history...")
+                    cursor.execute("DELETE FROM django_migrations WHERE app = 'farm';")
+                    print("✅ Farm migration history cleared")
+    except Exception as check_error:
+        print(f"⚠️ Could not check migration state: {check_error}")
+        # Continue anyway
+
+    try:
+        print("\nRunning migrations...")
         call_command('migrate', verbosity=2, interactive=False)
         print("✅ Migrations completed successfully!")
         return True
