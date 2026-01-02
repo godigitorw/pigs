@@ -4,15 +4,19 @@ set -o errexit
 
 # Install system dependencies for WeasyPrint (PDF generation)
 echo "Installing system dependencies..."
-apt-get update
-apt-get install -y \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
-    libffi-dev \
-    shared-mime-info \
-    libcairo2 \
-    libpangoft2-1.0-0
+if command -v apt-get &> /dev/null; then
+    apt-get update
+    apt-get install -y \
+        libpango-1.0-0 \
+        libpangocairo-1.0-0 \
+        libgdk-pixbuf2.0-0 \
+        libffi-dev \
+        shared-mime-info \
+        libcairo2 \
+        libpangoft2-1.0-0 || echo "Some system packages failed, continuing..."
+else
+    echo "apt-get not available, skipping system dependencies"
+fi
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
