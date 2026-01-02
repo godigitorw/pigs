@@ -6,6 +6,7 @@ class UserRole(models.Model):
     ROLE_CHOICES = [
         ('farm_owner', 'Farm Owner/Admin'),
         ('farm_manager', 'Farm Manager'),
+        ('farm_worker', 'Farm Worker'),
         ('feed_manager', 'Feed Manager'),
         ('accountant', 'Accountant/Finance'),
         ('viewer', 'Viewer/Inspector'),
