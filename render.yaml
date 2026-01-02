@@ -25,7 +25,7 @@ services:
     autoDeploy: true
 
   # PostgreSQL Database
-  - type: pgsql
+  - type: postgres
     name: pigfarm-db
     plan: free
     databaseName: pigfarm
