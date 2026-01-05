@@ -97,8 +97,8 @@ class CustomUser(AbstractUser):
 class UserSession(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_sessions')
     session_key = models.CharField(max_length=40, unique=True)
-    ip_address = models.GenericIPAddressField()
-    user_agent = models.TextField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
     login_time = models.DateTimeField(auto_now_add=True)
     last_activity = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -122,7 +122,7 @@ class UserActivity(models.Model):
     module = models.CharField(max_length=50)
     object_id = models.CharField(max_length=50, blank=True, null=True)
     object_repr = models.CharField(max_length=200, blank=True, null=True)
-    ip_address = models.GenericIPAddressField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     additional_data = models.JSONField(blank=True, null=True)
 

@@ -12,33 +12,45 @@ class UserSessionMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         if request.user.is_authenticated:
-            # Get IP address
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                ip = x_forwarded_for.split(',')[0]
-            else:
-                ip = request.META.get('REMOTE_ADDR')
+            try:
+                # Get IP address with fallback
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                if x_forwarded_for:
+                    ip = x_forwarded_for.split(',')[0].strip()
+                else:
+                    ip = request.META.get('REMOTE_ADDR')
+                
+                # Fallback to localhost if IP detection fails
+                if not ip:
+                    ip = '127.0.0.1'
 
-            # Update last login IP
-            if request.user.last_login_ip != ip:
-                request.user.last_login_ip = ip
-                request.user.save(update_fields=['last_login_ip'])
+                # Update last login IP
+                if request.user.last_login_ip != ip:
+                    request.user.last_login_ip = ip
+                    request.user.save(update_fields=['last_login_ip'])
 
-            # Update or create session record
-            session_key = request.session.session_key
-            if session_key:
-                user_session, created = UserSession.objects.get_or_create(
-                    session_key=session_key,
-                    defaults={
-                        'user': request.user,
-                        'ip_address': ip,
-                        'user_agent': request.META.get('HTTP_USER_AGENT', '')[:255],
-                    }
-                )
+                # Update or create session record
+                session_key = request.session.session_key
+                if session_key:
+                    user_session, created = UserSession.objects.get_or_create(
+                        session_key=session_key,
+                        defaults={
+                            'user': request.user,
+                            'ip_address': ip,
+                            'user_agent': request.META.get('HTTP_USER_AGENT', '')[:255],
+                        }
+                    )
 
-                if not created:
-                    user_session.last_activity = timezone.now()
-                    user_session.save(update_fields=['last_activity'])
+                    if not created:
+                        user_session.last_activity = timezone.now()
+                        user_session.save(update_fields=['last_activity'])
+            except Exception as e:
+                # Log error but don't break the request
+                # In production, you might want to log this to a monitoring service
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"UserSessionMiddleware error: {str(e)}")
+                pass
 
 class RoleBasedAccessMiddleware(MiddlewareMixin):
     """
@@ -81,12 +93,16 @@ class ActivityLogMiddleware(MiddlewareMixin):
             200 <= response.status_code < 300 and
             request.method in ['POST', 'PUT', 'PATCH', 'DELETE']):
 
-            # Get IP address
+            # Get IP address with fallback
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             if x_forwarded_for:
-                ip = x_forwarded_for.split(',')[0]
+                ip = x_forwarded_for.split(',')[0].strip()
             else:
                 ip = request.META.get('REMOTE_ADDR')
+            
+            # Fallback to localhost if IP detection fails
+            if not ip:
+                ip = '127.0.0.1'
 
             # Determine action based on method
             action_map = {
