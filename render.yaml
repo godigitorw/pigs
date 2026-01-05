@@ -6,7 +6,7 @@ services:
     plan: free
     region: oregon
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && python cleanup_db.py && cd pigfarm && python manage.py collectstatic --no-input && python manage.py migrate --no-input && cd .. && python create_default_admin.py || echo 'Admin creation skipped'"
-    startCommand: "cd pigfarm && gunicorn pigfarm.wsgi:application"
+    startCommand: "cd pigfarm && gunicorn pigfarm.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0
@@ -15,7 +15,7 @@ services:
       - key: DEBUG
         value: False
       - key: ALLOWED_HOSTS
-        sync: false
+        value: pigfarm-mrz6.onrender.com
       - key: DATABASE_URL
         sync: false
       - key: RENDER
