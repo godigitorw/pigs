@@ -21,7 +21,14 @@ fi
 # Install Python dependencies
 echo "Installing Python dependencies..."
 pip install --upgrade pip
+# Install Python dependencies
+echo "Installing Python dependencies..."
+pip install --upgrade pip
 pip install -r requirements.txt
+
+# Run database repair/check script
+echo "Checking database state..."
+python fix_database.py
 
 # Navigate to Django project directory
 cd pigfarm
