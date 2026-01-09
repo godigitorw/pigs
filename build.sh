@@ -31,7 +31,13 @@ echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
 # Run database migrations
+# Run database migrations
 echo "Running database migrations..."
+# Migrate apps explicitly to ensure dependencies are handled
+python manage.py migrate farm --no-input
+python manage.py migrate health --no-input
+python manage.py migrate users --no-input
+# Run any remaining migrations
 python manage.py migrate --no-input
 
 # Create default admin user if it doesn't exist
