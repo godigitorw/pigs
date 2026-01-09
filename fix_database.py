@@ -51,43 +51,39 @@ try:
     if cursor.fetchone()[0]:
         print("   ✓ django_migrations table exists")
 
-        # Check farm migrations
-        print("\n2. Checking farm migration history...")
-        cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = 'farm';")
-        farm_count = cursor.fetchone()[0]
-        print(f"   Found {farm_count} farm migrations in history")
+    apps_to_check = ['farm', 'health', 'users']
 
-        # Check farm tables
-        print("\n3. Checking for farm tables...")
+    for app in apps_to_check:
+        print(f"\nChecking {app} app state...")
+        
+        # Check migration history
+        cursor.execute("SELECT COUNT(*) FROM django_migrations WHERE app = %s;", (app,))
+        mig_count = cursor.fetchone()[0]
+        print(f"   Found {mig_count} {app} migrations in history")
+
+        # Check tables
         cursor.execute("""
             SELECT COUNT(*) FROM pg_tables
-            WHERE tablename LIKE 'farm_%' AND schemaname = 'public';
-        """)
+            WHERE tablename LIKE %s AND schemaname = 'public';
+        """, (f'{app}_%',))
         table_count = cursor.fetchone()[0]
-        print(f"   Found {table_count} farm tables in database")
+        print(f"   Found {table_count} {app} tables in database")
 
         # Fix corrupt state
-        if farm_count > 0 and table_count == 0:
-            print("\n⚠️  CORRUPT STATE DETECTED!")
-            print("   Clearing farm migration history...")
-            cursor.execute("DELETE FROM django_migrations WHERE app = 'farm';")
-            print("   ✅ Farm migration history cleared")
-        elif farm_count > 0 and table_count > 0:
-            print("\n   Checking if tables match migrations...")
-            # If tables exist but migrations are failing, drop everything
-            print("   ⚠️  Dropping all farm tables to recreate from scratch...")
-            cursor.execute("""
-                SELECT tablename FROM pg_tables
-                WHERE tablename LIKE 'farm_%' AND schemaname = 'public';
-            """)
-            for row in cursor.fetchall():
-                print(f"   Dropping {row[0]}...")
-                cursor.execute(f"DROP TABLE IF EXISTS {row[0]} CASCADE;")
-            print("   Clearing farm migration history...")
-            cursor.execute("DELETE FROM django_migrations WHERE app = 'farm';")
-            print("   ✅ Farm app reset complete")
-        else:
-            print("\n   ✅ State looks good")
+        if mig_count > 0 and table_count == 0:
+            print(f"\n⚠️  CORRUPT STATE DETECTED FOR {app}!")
+            print(f"   Clearing {app} migration history...")
+            cursor.execute("DELETE FROM django_migrations WHERE app = %s;", (app,))
+            print(f"   ✅ {app} migration history cleared")
+        elif mig_count > 0 and table_count > 0:
+            # Basic sanity check passed
+            print(f"   ✅ {app} State looks good")
+        elif mig_count == 0 and table_count == 0:
+            print(f"   ℹ️  {app} appears clean (no migrations, no tables)")
+        elif mig_count == 0 and table_count > 0:
+             print(f"   ⚠️  Tables exist but no migrations for {app}. This might be okay if using legacy DB.")
+        # Reset specific app if needed (logic can be expanded)
+        pass
     else:
         print("   Fresh database - no migration table yet")
 
